@@ -171,9 +171,9 @@ export const setupLnbTitle = "구축";
 export const supportLnbTitle = "지원";
 
 export const supportLnbItems: SetupLnbItem[] = [
-  { id: "support-public", label: "공공지원사업" },
-  { id: "support-private", label: "민간지원사업" },
-  { id: "support-current", label: "현재진행중인 사업" },
-  { id: "support-docs", label: "서류관리" },
-  { id: "support-aftercare", label: "사후관리" },
+  { id: "support-public", label: "[지원] 공공지원사업" },
+  { id: "support-private", label: "[지원] 민간지원사업" },
+  { id: "support-current", label: "[지원] 현재진행중인 사업" },
+  { id: "support-docs", label: "[지원] 서류관리" },
+  { id: "support-aftercare", label: "[지원] 사후관리" },
 ];
