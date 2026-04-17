@@ -1,3 +1,4 @@
+import dns from "node:dns";
 import { NextResponse } from "next/server";
 import {
   extractBizinfoJsonArray,
@@ -6,18 +7,32 @@ import {
 } from "@/lib/bizinfo-map";
 import type { PublicSupportNotice } from "@/data/publicSupportMock";
 
+/** Vercel 등에서 IPv6 우선 해석으로 인한 undici `fetch failed` 완화 */
+dns.setDefaultResultOrder("ipv4first");
+
 export const dynamic = "force-dynamic";
 /** 기업마당 쪽으로 여러 페이지 fetch — Node 런타임 권장 */
 export const runtime = "nodejs";
 
 const BIZINFO_LIST_URL = "https://www.bizinfo.go.kr/uss/rss/bizinfoApi.do";
-const MAX_PAGES = 12;
-const PAGE_UNIT = 100;
+/** 서버리스 시간 제한을 넘기지 않도록 호출 횟수·건수 상한 */
+const MAX_PAGES = 3;
+const PAGE_UNIT = 500;
+const FETCH_MS = 12_000;
 
 /** 빌드 시점에 비어 있으면 env 가 undefined 로 박히는 경우를 피하려고 런타임 조회 */
 function readServerEnv(name: string): string | undefined {
   const v = process.env[name];
   return typeof v === "string" ? v : undefined;
+}
+
+function describeFetchError(e: unknown): string {
+  if (!(e instanceof Error)) return String(e);
+  const parts = [e.message];
+  if ("cause" in e && e.cause instanceof Error && e.cause.message) {
+    parts.push(`원인: ${e.cause.message}`);
+  }
+  return parts.join(" ");
 }
 
 export async function GET() {
@@ -48,6 +63,7 @@ export async function GET() {
 
       const res = await fetch(url.toString(), {
         cache: "no-store",
+        signal: AbortSignal.timeout(FETCH_MS),
         headers: {
           Accept: "application/json",
           "User-Agent": "ERP-Portfolio/1.0 (Next.js)",
@@ -102,12 +118,15 @@ export async function GET() {
       items: merged,
     });
   } catch (e) {
-    const message = e instanceof Error ? e.message : "unknown error";
+    const message = describeFetchError(e);
     return NextResponse.json(
       {
         ok: false,
         code: "fetch_failed",
-        message,
+        message:
+          message === "fetch failed"
+            ? "기업마당 서버 연결에 실패했습니다. (네트워크·IPv6·방화벽·실행 시간 제한 가능) 잠시 후 다시 시도해 주세요."
+            : message,
         items: [] as PublicSupportNotice[],
       },
       { status: 500 },
