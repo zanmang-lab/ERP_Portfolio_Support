@@ -1,4 +1,6 @@
+import { createHash } from "node:crypto";
 import dns from "node:dns";
+import { unstable_cache } from "next/cache";
 import { NextResponse } from "next/server";
 import {
   extractBizinfoJsonArray,
@@ -17,17 +19,23 @@ export const runtime = "nodejs";
 export const maxDuration = 30;
 
 const BIZINFO_LIST_URL = "https://www.bizinfo.go.kr/uss/rss/bizinfoApi.do";
-/** 한 번에 읽는 바이트·페이지 수 균형 (ECONNRESET 완화를 위해 과도한 다중 호출은 피함) */
+/** 응답 크기·연속 호출 완화(ECONNRESET). 원본 상한은 pageUnit * MAX_PAGES */
 const MAX_PAGES = 2;
-const PAGE_UNIT = 200;
+const PAGE_UNIT = 160;
 const FETCH_MS = 10_000;
-const FETCH_RETRIES = 3;
-const MS_BETWEEN_PAGES = 450;
+const FETCH_RETRIES = 4;
+const MS_BETWEEN_PAGES = 800;
+/** 성공 목록만 캐시. 짧은 TTL로 새로고침 연타 시 기업마당 호출 감소(목록은 최대 이 시간만큼 지연 반영) */
+const CACHE_REVALIDATE_SEC = 90;
 
 /** 빌드 시점에 비어 있으면 env 가 undefined 로 박히는 경우를 피하려고 런타임 조회 */
 function readServerEnv(name: string): string | undefined {
   const v = process.env[name];
   return typeof v === "string" ? v : undefined;
+}
+
+function cacheKeyPrefix(crtfcKey: string): string {
+  return createHash("sha256").update(crtfcKey, "utf8").digest("hex").slice(0, 16);
 }
 
 function describeFetchError(e: unknown): string {
@@ -41,6 +49,27 @@ function describeFetchError(e: unknown): string {
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+type ReqErrTagged = { readonly tag: "reqErr"; readonly message: string };
+type InvalidJsonTagged = { readonly tag: "invalid_json"; readonly detail: string };
+
+function isReqErrTagged(e: unknown): e is ReqErrTagged {
+  return (
+    typeof e === "object" &&
+    e !== null &&
+    "tag" in e &&
+    (e as { tag: string }).tag === "reqErr"
+  );
+}
+
+function isInvalidJsonTagged(e: unknown): e is InvalidJsonTagged {
+  return (
+    typeof e === "object" &&
+    e !== null &&
+    "tag" in e &&
+    (e as { tag: string }).tag === "invalid_json"
+  );
 }
 
 /** ECONNRESET 등은 재시도로 종종 성공. keep-alive 풀 이슈 완화에 Connection: close 사용 */
@@ -73,6 +102,72 @@ async function fetchBizinfoBody(url: URL): Promise<string> {
   throw lastError;
 }
 
+type LoadResult = { items: PublicSupportNotice[]; partial: boolean };
+
+/**
+ * 기업마당에서 페이지를 순회하며 진행 중 공고만 수집.
+ * 2페이지째 네트워크·JSON 오류 등은 1페이지 결과가 있으면 partial 로 삼킴(reqErr 는 항상 전파).
+ */
+async function loadBizinfoSupportNoticesFromOrigin(
+  crtfcKey: string,
+): Promise<LoadResult> {
+  const merged: PublicSupportNotice[] = [];
+  const seen = new Set<string>();
+
+  for (let pageIndex = 1; pageIndex <= MAX_PAGES; pageIndex++) {
+    if (pageIndex > 1) await sleep(MS_BETWEEN_PAGES);
+
+    try {
+      const url = new URL(BIZINFO_LIST_URL);
+      url.searchParams.set("crtfcKey", crtfcKey);
+      url.searchParams.set("dataType", "json");
+      url.searchParams.set("pageUnit", String(PAGE_UNIT));
+      url.searchParams.set("pageIndex", String(pageIndex));
+
+      const text = await fetchBizinfoBody(url);
+
+      let data: unknown;
+      try {
+        data = JSON.parse(text) as unknown;
+      } catch {
+        if (merged.length > 0) {
+          return { items: merged, partial: true };
+        }
+        throw {
+          tag: "invalid_json" as const,
+          detail: text.slice(0, 400),
+        } satisfies InvalidJsonTagged;
+      }
+
+      if (data && typeof data === "object" && "reqErr" in data) {
+        const message = String((data as { reqErr: unknown }).reqErr);
+        throw { tag: "reqErr" as const, message } satisfies ReqErrTagged;
+      }
+
+      const rawRows = extractBizinfoJsonArray(data);
+      if (rawRows.length === 0) break;
+
+      for (const raw of rawRows) {
+        const mapped = mapBizinfoItemToNotice(raw);
+        if (!mapped || !isOngoingPublicNotice(mapped)) continue;
+        if (seen.has(mapped.id)) continue;
+        seen.add(mapped.id);
+        merged.push(mapped);
+      }
+
+      if (rawRows.length < PAGE_UNIT) break;
+    } catch (e) {
+      if (isReqErrTagged(e)) throw e;
+      if (merged.length > 0) {
+        return { items: merged, partial: true };
+      }
+      throw e;
+    }
+  }
+
+  return { items: merged, partial: false };
+}
+
 export async function GET() {
   const crtfcKey = readServerEnv("BIZINFO_CRTFC_KEY")?.trim();
   if (!crtfcKey) {
@@ -88,67 +183,48 @@ export async function GET() {
     );
   }
 
-  const merged: PublicSupportNotice[] = [];
-  const seen = new Set<string>();
+  const keyHash = cacheKeyPrefix(crtfcKey);
 
   try {
-    for (let pageIndex = 1; pageIndex <= MAX_PAGES; pageIndex++) {
-      if (pageIndex > 1) await sleep(MS_BETWEEN_PAGES);
+    const cachedLoad = unstable_cache(
+      async () => loadBizinfoSupportNoticesFromOrigin(crtfcKey),
+      ["bizinfo-support-notices", keyHash],
+      { revalidate: CACHE_REVALIDATE_SEC },
+    );
 
-      const url = new URL(BIZINFO_LIST_URL);
-      url.searchParams.set("crtfcKey", crtfcKey);
-      url.searchParams.set("dataType", "json");
-      url.searchParams.set("pageUnit", String(PAGE_UNIT));
-      url.searchParams.set("pageIndex", String(pageIndex));
-
-      const text = await fetchBizinfoBody(url);
-      let data: unknown;
-      try {
-        data = JSON.parse(text) as unknown;
-      } catch {
-        return NextResponse.json(
-          {
-            ok: false,
-            code: "invalid_json",
-            message: "기업마당 응답이 JSON이 아닙니다.",
-            detail: text.slice(0, 400),
-            items: [],
-          },
-          { status: 502 },
-        );
-      }
-
-      if (data && typeof data === "object" && "reqErr" in data) {
-        return NextResponse.json(
-          {
-            ok: false,
-            code: "bizinfo_error",
-            message: String((data as { reqErr: unknown }).reqErr),
-            items: [],
-          },
-          { status: 401 },
-        );
-      }
-
-      const rawRows = extractBizinfoJsonArray(data);
-      if (rawRows.length === 0) break;
-
-      for (const raw of rawRows) {
-        const mapped = mapBizinfoItemToNotice(raw);
-        if (!mapped || !isOngoingPublicNotice(mapped)) continue;
-        if (seen.has(mapped.id)) continue;
-        seen.add(mapped.id);
-        merged.push(mapped);
-      }
-
-      if (rawRows.length < PAGE_UNIT) break;
-    }
+    const { items, partial } = await cachedLoad();
 
     return NextResponse.json({
       ok: true,
-      items: merged,
+      items,
+      ...(partial ? { meta: { partial: true as const } } : {}),
     });
   } catch (e) {
+    if (isReqErrTagged(e)) {
+      return NextResponse.json(
+        {
+          ok: false,
+          code: "bizinfo_error",
+          message: e.message,
+          items: [] as PublicSupportNotice[],
+        },
+        { status: 401 },
+      );
+    }
+
+    if (isInvalidJsonTagged(e)) {
+      return NextResponse.json(
+        {
+          ok: false,
+          code: "invalid_json",
+          message: "기업마당 응답이 JSON이 아닙니다.",
+          detail: e.detail,
+          items: [],
+        },
+        { status: 502 },
+      );
+    }
+
     const message = describeFetchError(e);
     const isReset =
       /ECONNRESET|ECONNREFUSED|ETIMEDOUT|EPIPE/i.test(message) ||

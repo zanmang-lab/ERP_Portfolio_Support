@@ -20,6 +20,7 @@ type ApiPayload = {
   items?: PublicSupportNotice[];
   message?: string;
   code?: string;
+  meta?: { partial?: boolean };
 };
 
 type SortKey = "field" | "title" | "deadline" | "ministry";
@@ -119,6 +120,7 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
   const [loadState, setLoadState] = useState<LoadState>("idle");
   const [errorText, setErrorText] = useState<string | null>(null);
   const [usingMock, setUsingMock] = useState(false);
+  const [partialFromApi, setPartialFromApi] = useState(false);
   const [sort, setSort] = useState<{ key: SortKey | null; dir: SortDir }>({
     key: null,
     dir: "asc",
@@ -130,6 +132,7 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
       setLoadState("loading");
       setErrorText(null);
       setUsingMock(false);
+      setPartialFromApi(false);
       try {
         const res = await fetch("/api/bizinfo/support-notices", {
           cache: "no-store",
@@ -141,6 +144,7 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
         if (res.status === 503 && json.code === "missing_key") {
           setRows(publicSupportMockList);
           setUsingMock(true);
+          setPartialFromApi(false);
           setErrorText(json.message ?? null);
           setLoadState("ready");
           return;
@@ -148,6 +152,7 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
 
         if (!res.ok || !json.ok) {
           setRows([]);
+          setPartialFromApi(false);
           setErrorText(
             json.message ?? `목록을 불러오지 못했습니다. (${res.status})`,
           );
@@ -156,10 +161,12 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
         }
 
         setRows(Array.isArray(json.items) ? json.items : []);
+        setPartialFromApi(Boolean(json.meta?.partial));
         setLoadState("ready");
       } catch (e) {
         if (!cancelled) {
           setRows([]);
+          setPartialFromApi(false);
           setErrorText(e instanceof Error ? e.message : "네트워크 오류");
           setLoadState("error");
         }
@@ -211,6 +218,12 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
       {loadState === "error" && errorText && !usingMock ? (
         <div className="shrink-0 border-b border-red-200 bg-red-50 px-4 py-2 text-sm text-red-900">
           {errorText}
+        </div>
+      ) : null}
+
+      {loadState === "ready" && partialFromApi && !usingMock ? (
+        <div className="shrink-0 border-b border-zinc-200 bg-zinc-100 px-4 py-1.5 text-xs text-zinc-700">
+          일부만 불러왔습니다. 네트워크 상태에 따라 다음 페이지가 생략될 수 있어요. 잠시 후 새로고침하면 전체를 다시 시도합니다.
         </div>
       ) : null}
 
