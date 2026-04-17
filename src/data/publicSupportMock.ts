@@ -11,6 +11,8 @@ export interface PublicSupportNotice {
   ministry: string;
   agency: string;
   hasFile: boolean;
+  /** 기업마당 등에서 내려주는 첨부/상세 URL */
+  fileUrl?: string;
 }
 
 export function formatApplicationPeriod(row: PublicSupportNotice): string {
