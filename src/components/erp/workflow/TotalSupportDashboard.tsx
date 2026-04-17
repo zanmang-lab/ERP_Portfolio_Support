@@ -1,26 +1,39 @@
 "use client";
 
+import { ArrowRight } from "lucide-react";
 import { totalSupportWorkflow } from "@/config/erp-ui";
-import { WorkflowRow } from "./WorkflowRow";
+import { TaskCard } from "./TaskCard";
 
 export function TotalSupportDashboard() {
-  const rows = totalSupportWorkflow;
-  const last = rows.length - 1;
+  const classifySteps = totalSupportWorkflow[0].steps;
+  const filterStep = totalSupportWorkflow[1].steps[0];
+  const watchlistStep = totalSupportWorkflow[2].steps[0];
 
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 overflow-hidden bg-[#F3F4F6] p-4">
-      <div className="min-h-0 min-w-0 flex-1 overflow-x-auto overflow-y-auto overscroll-x-contain pt-1">
-        <div className="flex w-max min-w-full flex-col items-start gap-y-6 bg-transparent px-1 py-1">
-          {rows.map((row, index) => (
-            <WorkflowRow
-              key={row.id}
-              row={row}
-              rowPosition={
-                index === 0 ? "first" : index === last ? "last" : "middle"
-              }
-            />
-          ))}
-        </div>
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[#F3F4F6]">
+      <div className="flex min-h-0 min-w-0 flex-1 items-center justify-center overflow-x-auto overflow-y-auto overscroll-x-contain p-6">
+        <section
+          className="flex min-w-min flex-nowrap items-center justify-center gap-3 sm:gap-4"
+          aria-label="전체지원사업 프로세스: 사업분류, 필터링, 관심목록"
+        >
+          <div className="flex shrink-0 flex-col gap-2">
+            {classifySteps.map((step) => (
+              <TaskCard key={step.id} step={step} surface="flowchart" />
+            ))}
+          </div>
+          <ArrowRight
+            className="h-5 w-5 shrink-0 text-zinc-400"
+            strokeWidth={2}
+            aria-hidden
+          />
+          <TaskCard step={filterStep} surface="flowchart" />
+          <ArrowRight
+            className="h-5 w-5 shrink-0 text-zinc-400"
+            strokeWidth={2}
+            aria-hidden
+          />
+          <TaskCard step={watchlistStep} surface="flowchart" />
+        </section>
       </div>
     </div>
   );
