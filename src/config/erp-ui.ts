@@ -56,6 +56,9 @@ export const SUPPORT_GNB_ID = "support";
 /** LNB item that shows the Step 1 organization workflow dashboard */
 export const WORKFLOW_STEP1_ORG_ID = "step1-org";
 
+/** 지원 LNB: 전체지원사업 워크플로 대시보드 */
+export const SUPPORT_ALL_MENU_ID = "support-all";
+
 /** 좌측 보조 패널: 구축(STEP 목록) vs 지원 vs 일반 모듈 서브메뉴 */
 export type ErpLnbKind = "setup" | "module" | "support" | null;
 
@@ -171,8 +174,40 @@ export const setupLnbTitle = "구축";
 export const supportLnbTitle = "지원";
 
 export const supportLnbItems: SetupLnbItem[] = [
-  { id: "support-all", label: "[지원] 전체지원사업" },
+  { id: SUPPORT_ALL_MENU_ID, label: "[지원] 전체지원사업" },
   { id: "support-current", label: "[지원] 진행 중인 사업" },
   { id: "support-docs", label: "[지원] 서류관리" },
   { id: "support-aftercare", label: "[지원] 사후관리" },
+];
+
+export const totalSupportPageTitle = "[지원] 전체지원사업";
+
+export const totalSupportWorkflow: WorkflowRow[] = [
+  {
+    id: "total-support-classify",
+    categoryLabel: "사업분류",
+    arrowAfterStepIds: [],
+    steps: [
+      { id: "ts-public", label: "공공", iconKey: "keyboard", variant: "default" },
+      { id: "ts-private", label: "민간", iconKey: "keyboard", variant: "default" },
+      { id: "ts-other", label: "기타", iconKey: "keyboard", variant: "default" },
+    ],
+  },
+  {
+    id: "total-support-search",
+    categoryLabel: "상세검색",
+    steps: [{ id: "ts-filter", label: "필터링", iconKey: "keyboard", variant: "default" }],
+  },
+  {
+    id: "total-support-result",
+    categoryLabel: "결과관리",
+    steps: [
+      {
+        id: "total-support-watchlist",
+        label: "관심목록",
+        iconKey: "monitorSuccess",
+        variant: "success",
+      },
+    ],
+  },
 ];

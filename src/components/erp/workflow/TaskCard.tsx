@@ -33,6 +33,8 @@ function StepVisual({
   );
 }
 
+const WATCHLIST_STEP_ID = "total-support-watchlist";
+
 export function TaskCard({
   step,
   onActivate,
@@ -42,14 +44,17 @@ export function TaskCard({
 }) {
   const muted = step.variant === "muted";
   const multilineLabel = step.label.includes("\n");
+  const watchlistEmphasis = step.id === WATCHLIST_STEP_ID;
 
   return (
     <button
       type="button"
       onClick={() => onActivate?.(step.id)}
-      className={`flex min-w-[5.5rem] w-[6.5rem] max-w-[8.5rem] shrink-0 flex-col items-center gap-1 rounded border border-zinc-300 bg-white px-1 py-1.5 text-center text-xs shadow-sm transition hover:border-zinc-400 hover:shadow ${
-        muted ? "cursor-not-allowed opacity-60" : ""
-      }`}
+      className={`flex min-w-[5.5rem] w-[6.5rem] max-w-[8.5rem] shrink-0 flex-col items-center gap-1 rounded border bg-white px-1 py-1.5 text-center text-xs shadow-sm transition hover:border-zinc-400 hover:shadow ${
+        watchlistEmphasis
+          ? "border-emerald-400 ring-2 ring-emerald-400/50 shadow-md hover:border-emerald-500 hover:ring-emerald-400/60"
+          : "border-zinc-300"
+      } ${muted ? "cursor-not-allowed opacity-60" : ""}`}
       disabled={muted}
     >
       <div className="flex min-h-[2rem] w-full items-center justify-center rounded-sm border border-zinc-200 bg-zinc-50 py-0.5">

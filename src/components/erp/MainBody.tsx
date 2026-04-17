@@ -1,12 +1,14 @@
 "use client";
 
 import {
+  SUPPORT_ALL_MENU_ID,
   WORKFLOW_STEP1_ORG_ID,
   setupLnbItems,
   supportLnbItems,
   type ErpLnbKind,
 } from "@/config/erp-ui";
 import { FloatingActionButton } from "./workflow/FloatingActionButton";
+import { TotalSupportDashboard } from "./workflow/TotalSupportDashboard";
 import { WorkflowDashboard } from "./workflow/WorkflowDashboard";
 
 const DEMO_PENDING_LINE = "해당 메뉴는 데모에서 준비 중입니다.";
@@ -35,6 +37,8 @@ export function MainBody({
   activeModuleMenuLabel: string | null;
 }) {
   const showOrgWorkflow = activeWorkflowId === WORKFLOW_STEP1_ORG_ID;
+  const showTotalSupport =
+    activeSupportMenuId === SUPPORT_ALL_MENU_ID;
   const showOtherSetupSelection =
     activeWorkflowId !== null && activeWorkflowId !== WORKFLOW_STEP1_ORG_ID;
 
@@ -47,6 +51,14 @@ export function MainBody({
         <div className="flex min-w-0 shrink-0 justify-end border-t border-transparent p-3">
           <FloatingActionButton />
         </div>
+      </div>
+    );
+  }
+
+  if (showTotalSupport) {
+    return (
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <TotalSupportDashboard />
       </div>
     );
   }

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import {
   SETUP_GNB_ID,
+  SUPPORT_ALL_MENU_ID,
   SUPPORT_GNB_ID,
   WORKFLOW_STEP1_ORG_ID,
   ErpLnbKind,
@@ -11,6 +12,7 @@ import {
   setupLnbTitle,
   supportLnbItems,
   supportLnbTitle,
+  totalSupportPageTitle,
   workflowPageTitle,
 } from "@/config/erp-ui";
 import { getModuleSubmenuItems } from "@/config/erp-module-menus";
@@ -83,7 +85,9 @@ export function ErpShell() {
   };
 
   const showWorkflow = activeWorkflowId === WORKFLOW_STEP1_ORG_ID;
-  const topBarMode = showWorkflow ? "workflow" : "default";
+  const showTotalSupport = activeSupportMenuId === SUPPORT_ALL_MENU_ID;
+  const topBarMode =
+    showWorkflow || showTotalSupport ? "workflow" : "default";
 
   const modulePanelTitle =
     gnbModuleItems.find((m) => m.id === selectedGnbId)?.label ?? "";
@@ -137,7 +141,13 @@ export function ErpShell() {
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <TopBar
           mode={topBarMode}
-          pageTitle={showWorkflow ? workflowPageTitle : undefined}
+          pageTitle={
+            showTotalSupport
+              ? totalSupportPageTitle
+              : showWorkflow
+                ? workflowPageTitle
+                : undefined
+          }
         />
         <MainBody
           lnbOpen={lnbOpen}
