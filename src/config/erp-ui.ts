@@ -188,9 +188,9 @@ export const totalSupportWorkflow: WorkflowRow[] = [
     categoryLabel: "사업분류",
     arrowAfterStepIds: [],
     steps: [
-      { id: "ts-public", label: "공공", iconKey: "keyboard", variant: "default" },
-      { id: "ts-private", label: "민간", iconKey: "keyboard", variant: "default" },
-      { id: "ts-other", label: "기타", iconKey: "keyboard", variant: "default" },
+      { id: "ts-public", label: "공공지원사업", iconKey: "keyboard", variant: "default" },
+      { id: "ts-private", label: "민간지원사업", iconKey: "keyboard", variant: "default" },
+      { id: "ts-other", label: "기타지원사업", iconKey: "keyboard", variant: "default" },
     ],
   },
   {
