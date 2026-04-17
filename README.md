@@ -49,4 +49,6 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 3. Leave the default **Framework Preset: Next.js** and **Build Command: `next build`**, then click **Deploy**.
 
-4. When the build finishes, copy the production URL (for example `https://your-repo.vercel.app`) and share it. Further `git push` to the connected branch will redeploy automatically.
+4. **기업마당 공공지원 목록(실데이터)** 을 프로덕션에서 쓰려면 Vercel 프로젝트 **Settings → Environment Variables** 에 `BIZINFO_CRTFC_KEY` 를 추가하세요. 값은 기업마당에서 발급한 서비스키이며, **Production**(필요 시 **Preview**)에 체크한 뒤 저장합니다. 변수를 추가·수정한 뒤에는 **Deployments** 에서 최신 배포를 **Redeploy** 하거나 빈 커밋을 푸시해 다시 빌드해야 서버 라우트에 반영됩니다. (`NEXT_PUBLIC_` 접두어는 사용하지 마세요. 키가 클라이언트 번들에 포함될 수 있습니다.)
+
+5. When the build finishes, copy the production URL (for example `https://your-repo.vercel.app`) and share it. Further `git push` to the connected branch will redeploy automatically.

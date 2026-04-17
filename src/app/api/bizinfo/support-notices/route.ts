@@ -7,20 +7,28 @@ import {
 import type { PublicSupportNotice } from "@/data/publicSupportMock";
 
 export const dynamic = "force-dynamic";
+/** 기업마당 쪽으로 여러 페이지 fetch — Node 런타임 권장 */
+export const runtime = "nodejs";
 
 const BIZINFO_LIST_URL = "https://www.bizinfo.go.kr/uss/rss/bizinfoApi.do";
 const MAX_PAGES = 12;
 const PAGE_UNIT = 100;
 
+/** 빌드 시점에 비어 있으면 env 가 undefined 로 박히는 경우를 피하려고 런타임 조회 */
+function readServerEnv(name: string): string | undefined {
+  const v = process.env[name];
+  return typeof v === "string" ? v : undefined;
+}
+
 export async function GET() {
-  const crtfcKey = process.env.BIZINFO_CRTFC_KEY?.trim();
+  const crtfcKey = readServerEnv("BIZINFO_CRTFC_KEY")?.trim();
   if (!crtfcKey) {
     return NextResponse.json(
       {
         ok: false,
         code: "missing_key",
         message:
-          "서버 환경변수 BIZINFO_CRTFC_KEY 가 설정되지 않았습니다. .env.local 에 기업마당에서 발급받은 키를 넣어 주세요.",
+          "서버 환경변수 BIZINFO_CRTFC_KEY 가 설정되지 않았습니다. 로컬은 프로젝트 루트의 .env.local, Vercel 등 배포는 프로젝트 Settings → Environment Variables에 동일 이름으로 키를 넣은 뒤 재배포하세요.",
         items: [] as PublicSupportNotice[],
       },
       { status: 503 },
