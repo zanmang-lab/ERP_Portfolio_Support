@@ -39,7 +39,14 @@ export function normalizeBizinfoDate(raw: string): string | null {
 
 /** "YYYYMMDD~YYYYMMDD" 또는 "YYYY-MM-DD ~ YYYY-MM-DD" 등 */
 function parseBeginEndFromCombined(raw: string): { start: string | null; end: string | null } {
-  const parts = raw.split(/[~\-–]/).map((p) => p.trim()).filter(Boolean);
+  const tilde = raw.split("~").map((p) => p.trim()).filter(Boolean);
+  if (tilde.length >= 2) {
+    return {
+      start: normalizeBizinfoDate(tilde[0]!.replace(/\s/g, "")),
+      end: normalizeBizinfoDate(tilde[1]!.replace(/\s/g, "")),
+    };
+  }
+  const parts = raw.split(/[–-]/).map((p) => p.trim()).filter(Boolean);
   if (parts.length >= 2) {
     return {
       start: normalizeBizinfoDate(parts[0]!.replace(/\s/g, "")),
@@ -49,24 +56,90 @@ function parseBeginEndFromCombined(raw: string): { start: string | null; end: st
   return { start: null, end: null };
 }
 
+/** 신청기간이 임의 필드 문자열로만 올 때 (예: 상세문구 안의 20250101~20250331) */
+function inferPeriodFromRowStrings(
+  row: Record<string, unknown>,
+): { start: string | null; end: string | null } {
+  for (const v of Object.values(row)) {
+    if (typeof v !== "string") continue;
+    const t = v.trim();
+    if (t.length < 17 || !t.includes("~")) continue;
+    const parsed = parseBeginEndFromCombined(t);
+    if (parsed.start && parsed.end) return parsed;
+  }
+  return { start: null, end: null };
+}
+
 export function mapBizinfoItemToNotice(
   row: Record<string, unknown>,
 ): PublicSupportNotice | null {
-  const id = pickStr(row, ["pblancId", "pblanc_id", "id"]);
-  const title = pickStr(row, ["pblancNm", "pblanc_nm", "title"]);
+  const id = pickStr(row, ["pblancId", "pblanc_id", "pbancSn", "pbanc_sn", "id"]);
+  const title = pickStr(row, [
+    "pblancNm",
+    "pblanc_nm",
+    "pbancNm",
+    "pbanc_nm",
+    "sportTitle",
+    "sport_title",
+    "title",
+  ]);
   if (!id || !title) return null;
 
-  let periodStart =
-    normalizeBizinfoDate(pickStr(row, ["reqstBeginDe", "reqst_begin_de", "applBeginDt"])) ??
-    null;
-  let periodEnd =
-    normalizeBizinfoDate(pickStr(row, ["reqstEndDe", "reqst_end_de", "applEndDt"])) ?? null;
+  const beginKeys = [
+    "reqstBeginDe",
+    "reqst_begin_de",
+    "reqstBeginDt",
+    "reqst_begin_dt",
+    "rceptBeginDe",
+    "rcept_begin_de",
+    "rceptBeginDt",
+    "applBeginDe",
+    "appl_begin_de",
+    "applBeginDt",
+    "appl_begin_dt",
+    "pbancRgstBgnDe",
+    "pbanc_rgst_bgn_de",
+    "rceptBgnde",
+  ];
+  const endKeys = [
+    "reqstEndDe",
+    "reqst_end_de",
+    "reqstEndDt",
+    "reqst_end_dt",
+    "rceptEndDe",
+    "rcept_end_de",
+    "rceptEndDt",
+    "applEndDe",
+    "appl_end_de",
+    "applEndDt",
+    "appl_end_dt",
+    "pbancRgstEndDe",
+    "pbanc_rgst_end_de",
+    "rceptEndde",
+  ];
+  let periodStart = normalizeBizinfoDate(pickStr(row, beginKeys)) ?? null;
+  let periodEnd = normalizeBizinfoDate(pickStr(row, endKeys)) ?? null;
 
-  const combined = pickStr(row, ["reqstBeginEndDe", "reqst_begin_end_de", "applDt"]);
+  const combined = pickStr(row, [
+    "reqstBeginEndDe",
+    "reqst_begin_end_de",
+    "applDt",
+    "rceptPd",
+    "rcept_pd",
+    "reqstPd",
+    "pbancDt",
+    "bsnsOperDe",
+  ]);
   if ((!periodStart || !periodEnd) && combined) {
     const parsed = parseBeginEndFromCombined(combined);
     periodStart = periodStart ?? parsed.start;
     periodEnd = periodEnd ?? parsed.end;
+  }
+
+  if (!periodEnd) {
+    const inferred = inferPeriodFromRowStrings(row);
+    periodStart = periodStart ?? inferred.start;
+    periodEnd = inferred.end ?? null;
   }
 
   if (!periodEnd) return null;
@@ -111,23 +184,21 @@ export function mapBizinfoItemToNotice(
   };
 }
 
-function startOfToday(): Date {
-  const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+/** Vercel(UTC) 등에서도 한국 달력 기준으로 진행 여부 판정 */
+function todayYmdSeoul(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
 }
 
-function parseYmd(ymd: string): Date | null {
-  const n = normalizeBizinfoDate(ymd);
-  if (!n) return null;
-  const [y, m, d] = n.split("-").map(Number);
-  return new Date(y, m - 1, d);
-}
-
-/** 신청 시작일 이전이 아니고, 신청 마감일이 오늘 이후(당일 포함)인 공고 */
+/** 신청 시작일 이전이 아니고, 신청 마감일이 오늘 이후(당일 포함)인 공고 — 날짜는 YYYY-MM-DD 문자열 비교 */
 export function isOngoingPublicNotice(row: PublicSupportNotice): boolean {
-  const today = startOfToday();
-  const end = parseYmd(row.periodEnd);
-  const begin = parseYmd(row.periodStart);
+  const today = todayYmdSeoul();
+  const end = normalizeBizinfoDate(row.periodEnd);
+  const begin = normalizeBizinfoDate(row.periodStart);
   if (!end) return false;
   if (end < today) return false;
   if (begin && begin > today) return false;
