@@ -59,6 +59,9 @@ export const WORKFLOW_STEP1_ORG_ID = "step1-org";
 /** 지원 LNB: 전체지원사업 워크플로 대시보드 */
 export const SUPPORT_ALL_MENU_ID = "support-all";
 
+/** 전체지원사업 플로우: 공공지원사업 카드 → 공고 목록 화면 */
+export const TOTAL_SUPPORT_PUBLIC_STEP_ID = "ts-public";
+
 /** 좌측 보조 패널: 구축(STEP 목록) vs 지원 vs 일반 모듈 서브메뉴 */
 export type ErpLnbKind = "setup" | "module" | "support" | null;
 
@@ -188,7 +191,12 @@ export const totalSupportWorkflow: WorkflowRow[] = [
     categoryLabel: "사업분류",
     arrowAfterStepIds: [],
     steps: [
-      { id: "ts-public", label: "공공지원사업", iconKey: "keyboard", variant: "default" },
+      {
+        id: TOTAL_SUPPORT_PUBLIC_STEP_ID,
+        label: "공공지원사업",
+        iconKey: "keyboard",
+        variant: "default",
+      },
       { id: "ts-private", label: "민간지원사업", iconKey: "keyboard", variant: "default" },
       { id: "ts-other", label: "기타지원사업", iconKey: "keyboard", variant: "default" },
     ],
