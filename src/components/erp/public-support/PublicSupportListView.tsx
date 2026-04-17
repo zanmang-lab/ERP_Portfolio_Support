@@ -1,7 +1,7 @@
 "use client";
 
-import { Download, ChevronLeft } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { ArrowDown, ArrowUp, Download, ChevronLeft } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   publicSupportMockList,
   formatApplicationPeriod,
@@ -22,12 +22,107 @@ type ApiPayload = {
   code?: string;
 };
 
+type SortKey = "field" | "title" | "deadline" | "ministry";
+type SortDir = "asc" | "desc";
+
+function normalizeDashEmpty(s: string): string {
+  const t = s.trim();
+  return t === "—" ? "" : t;
+}
+
+/** 빈 값(—)은 항상 목록 맨 아래 */
+function cmpKoEmptyLast(a: string, b: string, dir: SortDir): number {
+  const va = normalizeDashEmpty(a);
+  const vb = normalizeDashEmpty(b);
+  const ea = va === "" ? 1 : 0;
+  const eb = vb === "" ? 1 : 0;
+  if (ea !== eb) return ea - eb;
+  const c = va.localeCompare(vb, "ko");
+  return dir === "asc" ? c : -c;
+}
+
+function titleFirstLine(title: string): string {
+  const i = title.indexOf("\n");
+  return i === -1 ? title : title.slice(0, i);
+}
+
+function compareNotice(
+  a: PublicSupportNotice,
+  b: PublicSupportNotice,
+  key: SortKey,
+  dir: SortDir,
+): number {
+  switch (key) {
+    case "field":
+      return cmpKoEmptyLast(a.field, b.field, dir);
+    case "title":
+      return cmpKoEmptyLast(titleFirstLine(a.title), titleFirstLine(b.title), dir);
+    case "deadline": {
+      const c = a.deadline.localeCompare(b.deadline);
+      return dir === "asc" ? c : -c;
+    }
+    case "ministry":
+      return cmpKoEmptyLast(a.ministry, b.ministry, dir);
+    default:
+      return 0;
+  }
+}
+
+function SortTh({
+  label,
+  column,
+  sortKey,
+  sortDir,
+  onSort,
+  className = "",
+}: {
+  label: string;
+  column: SortKey;
+  sortKey: SortKey | null;
+  sortDir: SortDir;
+  onSort: (col: SortKey) => void;
+  className?: string;
+}) {
+  const active = sortKey === column;
+  const ariaSort = active
+    ? sortDir === "asc"
+      ? "ascending"
+      : "descending"
+    : "none";
+  return (
+    <th
+      scope="col"
+      aria-sort={ariaSort}
+      className={`border border-rose-200/80 px-0 py-0 text-center text-xs font-semibold ${className}`}
+    >
+      <button
+        type="button"
+        onClick={() => onSort(column)}
+        className="inline-flex min-h-[2.5rem] w-full cursor-pointer items-center justify-center gap-1 px-2 py-2.5 text-red-900 hover:bg-rose-200/50"
+      >
+        <span>{label}</span>
+        {active ? (
+          sortDir === "asc" ? (
+            <ArrowUp className="h-3.5 w-3.5 shrink-0" aria-hidden />
+          ) : (
+            <ArrowDown className="h-3.5 w-3.5 shrink-0" aria-hidden />
+          )
+        ) : null}
+      </button>
+    </th>
+  );
+}
+
 export function PublicSupportListView({ onBack }: { onBack: () => void }) {
   const [rows, setRows] = useState<PublicSupportNotice[]>([]);
   const [interest, setInterest] = useState<Record<string, boolean>>({});
   const [loadState, setLoadState] = useState<LoadState>("idle");
   const [errorText, setErrorText] = useState<string | null>(null);
   const [usingMock, setUsingMock] = useState(false);
+  const [sort, setSort] = useState<{ key: SortKey | null; dir: SortDir }>({
+    key: null,
+    dir: "asc",
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -79,6 +174,18 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
     setInterest((prev) => ({ ...prev, [id]: !prev[id] }));
   }, []);
 
+  const handleSortClick = useCallback((col: SortKey) => {
+    setSort((s) => {
+      if (s.key !== col) return { key: col, dir: "asc" };
+      return { key: col, dir: s.dir === "asc" ? "desc" : "asc" };
+    });
+  }, []);
+
+  const displayRows = useMemo(() => {
+    if (!sort.key) return rows;
+    return [...rows].sort((a, b) => compareNotice(a, b, sort.key!, sort.dir));
+  }, [rows, sort.key, sort.dir]);
+
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-gray-50">
       <header className="flex shrink-0 items-center gap-3 border-b border-zinc-200 bg-gray-50 px-4 py-3">
@@ -121,21 +228,38 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
                     <th className="border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold">
                       관심목록추가
                     </th>
-                    <th className="border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold">
-                      지원분야
-                    </th>
-                    <th className="border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold">
-                      공고사업명
-                    </th>
+                    <SortTh
+                      label="지원분야"
+                      column="field"
+                      sortKey={sort.key}
+                      sortDir={sort.dir}
+                      onSort={handleSortClick}
+                    />
+                    <SortTh
+                      label="공고사업명"
+                      column="title"
+                      sortKey={sort.key}
+                      sortDir={sort.dir}
+                      onSort={handleSortClick}
+                    />
                     <th className="border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold whitespace-nowrap">
                       신청기간
                     </th>
-                    <th className="border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold">
-                      마감 D-DAY
-                    </th>
-                    <th className="border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold">
-                      소관부처
-                    </th>
+                    <SortTh
+                      label="마감 D-DAY"
+                      column="deadline"
+                      sortKey={sort.key}
+                      sortDir={sort.dir}
+                      onSort={handleSortClick}
+                      className="whitespace-nowrap"
+                    />
+                    <SortTh
+                      label="소관부처"
+                      column="ministry"
+                      sortKey={sort.key}
+                      sortDir={sort.dir}
+                      onSort={handleSortClick}
+                    />
                     <th className="border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold">
                       사업수행기관
                     </th>
@@ -145,7 +269,7 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
                   </tr>
                 </thead>
                 <tbody className="bg-white text-zinc-800">
-                  {rows.length === 0 && loadState === "ready" ? (
+                  {displayRows.length === 0 && loadState === "ready" ? (
                     <tr>
                       <td
                         colSpan={8}
@@ -155,7 +279,7 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
                       </td>
                     </tr>
                   ) : null}
-                  {rows.map((row) => {
+                  {displayRows.map((row) => {
                     const daysUntil = getDaysUntilDeadline(row.deadline);
                     const ddayLabel = formatDdayLabel(daysUntil);
                     const urgent = isDeadlineWithinThreeDays(daysUntil);
