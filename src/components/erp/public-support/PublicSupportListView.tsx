@@ -94,12 +94,12 @@ function SortTh({
     <th
       scope="col"
       aria-sort={ariaSort}
-      className={`border border-rose-200/80 px-0 py-0 text-center text-xs font-semibold break-keep ${className}`}
+      className={`border border-rose-200/80 px-4 py-0 text-center text-xs font-semibold break-keep ${className}`}
     >
       <button
         type="button"
         onClick={() => onSort(column)}
-        className="inline-flex min-h-[2.5rem] w-full min-w-0 cursor-pointer items-center justify-center gap-1 whitespace-nowrap px-2 py-2.5 text-red-900 hover:bg-rose-200/50"
+        className="inline-flex min-h-[2.5rem] w-full min-w-0 cursor-pointer items-center justify-center gap-1 whitespace-nowrap px-0 py-2.5 text-red-900 hover:bg-rose-200/50"
       >
         <span className="whitespace-nowrap">{label}</span>
         {active ? (
@@ -236,20 +236,20 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
           ) : (
             <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
               <div className="h-full min-h-0 min-w-0 overflow-x-auto overflow-y-auto">
-                <table className="w-[1200px] min-w-[1200px] table-fixed border-collapse text-sm">
+                <table className="w-max min-w-[1320px] table-fixed border-collapse text-sm">
                   <colgroup>
                     <col className="w-[88px]" />
                     <col className="w-[104px]" />
                     <col />
-                    <col className="w-[148px]" />
+                    <col className="w-[220px]" />
                     <col className="w-[100px]" />
                     <col className="w-[136px]" />
-                    <col className="w-[136px]" />
+                    <col className="w-[156px]" />
                     <col className="w-[104px]" />
                   </colgroup>
                   <thead className="sticky top-0 z-10 bg-rose-100 text-red-900 shadow-sm">
                     <tr>
-                      <th className="whitespace-nowrap border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold break-keep">
+                      <th className="whitespace-nowrap border border-rose-200/80 px-4 py-2.5 text-center text-xs font-semibold break-keep">
                         관심목록추가
                       </th>
                       <SortTh
@@ -268,7 +268,7 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
                         onSort={handleSortClick}
                         className="min-w-0"
                       />
-                      <th className="whitespace-nowrap border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold break-keep">
+                      <th className="whitespace-nowrap border border-rose-200/80 px-4 py-2.5 text-center text-xs font-semibold break-keep">
                         신청기간
                       </th>
                       <SortTh
@@ -287,10 +287,10 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
                         onSort={handleSortClick}
                         className="whitespace-nowrap"
                       />
-                      <th className="whitespace-nowrap border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold break-keep">
+                      <th className="whitespace-nowrap border border-rose-200/80 px-4 py-2.5 text-center text-xs font-semibold break-keep">
                         사업수행기관
                       </th>
-                      <th className="whitespace-nowrap border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold break-keep">
+                      <th className="whitespace-nowrap border border-rose-200/80 px-4 py-2.5 text-center text-xs font-semibold break-keep">
                         파일다운로드
                       </th>
                     </tr>
@@ -312,7 +312,7 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
                       const urgent = isDeadlineWithinThreeDays(daysUntil);
                       return (
                         <tr key={row.id} className="hover:bg-zinc-50/80">
-                          <td className="whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep">
+                          <td className="whitespace-nowrap border border-zinc-200 px-4 py-2 text-center align-middle break-keep">
                             <input
                               type="checkbox"
                               checked={!!interest[row.id]}
@@ -321,29 +321,29 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
                               aria-label={`${row.title} 관심목록`}
                             />
                           </td>
-                          <td className="whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep">
+                          <td className="whitespace-nowrap border border-zinc-200 px-4 py-2 text-center align-middle break-keep">
                             {row.field}
                           </td>
-                          <td className="min-w-0 border border-zinc-200 px-2 py-2 align-top text-left break-keep break-words whitespace-normal">
+                          <td className="min-w-0 border border-zinc-200 px-4 py-2 align-top text-left break-keep break-words whitespace-normal">
                             {row.title}
                           </td>
-                          <td className="whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep">
+                          <td className="whitespace-nowrap border border-zinc-200 px-4 py-2 text-center align-middle break-keep">
                             {formatApplicationPeriod(row)}
                           </td>
                           <td
-                            className={`whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep tabular-nums ${
+                            className={`whitespace-nowrap border border-zinc-200 px-4 py-2 text-center align-middle break-keep tabular-nums ${
                               urgent ? "font-bold text-red-600" : ""
                             }`}
                           >
                             {ddayLabel}
                           </td>
-                          <td className="whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep">
+                          <td className="whitespace-nowrap border border-zinc-200 px-4 py-2 text-center align-middle break-keep">
                             {row.ministry}
                           </td>
-                          <td className="whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep">
+                          <td className="whitespace-nowrap border border-zinc-200 px-4 py-2 text-center align-middle break-keep">
                             {row.agency}
                           </td>
-                          <td className="whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep">
+                          <td className="whitespace-nowrap border border-zinc-200 px-4 py-2 text-center align-middle break-keep">
                             {row.hasFile && row.fileUrl ? (
                               <a
                                 href={row.fileUrl}
