@@ -27,6 +27,106 @@ function pickStr(row: Record<string, unknown>, keys: string[]): string {
   return "";
 }
 
+/** 기업마당 지원사업 `searchLclasId` 대분류와 동일 체계(문서 기준) */
+const BIZINFO_LCLAS_CODE_LABEL: Record<string, string> = {
+  "01": "금융",
+  "02": "기술",
+  "03": "인력",
+  "04": "수출",
+  "05": "내수",
+  "06": "창업",
+  "07": "경영",
+  "08": "제도",
+  "09": "기타",
+};
+
+function normalizeLclasCode(raw: string): string | null {
+  const t = raw.trim();
+  if (!/^\d{1,2}$/.test(t)) return null;
+  return t.padStart(2, "0");
+}
+
+/** 응답에 분야명 문자열이 없고 대분류 코드만 있을 때 */
+function pickSupportFieldFromLclasCode(row: Record<string, unknown>): string {
+  const codeKeys = [
+    "pldirSportRealmLclasId",
+    "pldir_sport_realm_lclas_id",
+    "sportRealmLclasId",
+    "sport_realm_lclas_id",
+    "lclasId",
+    "lclas_id",
+    "searchLclasId",
+    "search_lclas_id",
+  ];
+  for (const k of codeKeys) {
+    const v = row[k];
+    if (v === undefined || v === null) continue;
+    const code = normalizeLclasCode(String(v));
+    if (code && BIZINFO_LCLAS_CODE_LABEL[code]) {
+      return BIZINFO_LCLAS_CODE_LABEL[code]!;
+    }
+  }
+  return "";
+}
+
+/** 알려진 키 외에 필드명 패턴으로 지원분야 후보 문자열 찾기 */
+function pickSupportFieldByKeyPattern(row: Record<string, unknown>): string {
+  for (const [key, val] of Object.entries(row)) {
+    if (typeof val !== "string") continue;
+    const t = val.trim();
+    if (t.length < 2 || t.length > 80) continue;
+    const kl = key.toLowerCase();
+    if (/url|id$/i.test(key) && !/clnm|nm$/i.test(key)) continue;
+    if (
+      /lclas.*nm|sportrealm.*nm|sprtrealm|indstrl.*nm|pblancclnm|bsnslclas|realm.*nm|지원분야|분야명/i.test(
+        kl,
+      )
+    ) {
+      return t;
+    }
+  }
+  return "";
+}
+
+function pickSupportField(row: Record<string, unknown>): string {
+  const direct = pickStr(row, [
+    "lclasClNm",
+    "lclas_nm",
+    "lclasNm",
+    "LclasClNm",
+    "typeNm",
+    "type_nm",
+    "indstrlClNm",
+    "indstrl_cl_nm",
+    "pldirSportRealmLclasIdNm",
+    "pldir_sport_realm_lclas_id_nm",
+    "pldirSportRealmNm",
+    "pldir_sport_realm_nm",
+    "pldirSportRealmMlsfcNm",
+    "sportRealmNm",
+    "sport_realm_nm",
+    "sportRealmLclasNm",
+    "pblancClNm",
+    "pblanc_cl_nm",
+    "sprtArNm",
+    "sprt_ar_nm",
+    "jdgmnIndstryNm",
+    "jdgmn_indstry_nm",
+    "bsnsLclasNm",
+    "bsns_lclas_nm",
+    "dasfnSportRealmNm",
+    "demandSprtRealmNm",
+    "clssNm",
+    "clss_nm",
+    "realmLclasNm",
+    "deptSportRealmNm",
+  ]);
+  if (direct) return direct;
+  const fromCode = pickSupportFieldFromLclasCode(row);
+  if (fromCode) return fromCode;
+  return pickSupportFieldByKeyPattern(row);
+}
+
 /** YYYYMMDD 또는 YYYY-MM-DD → YYYY-MM-DD */
 export function normalizeBizinfoDate(raw: string): string | null {
   const s = raw.replace(/\./g, "").replace(/-/g, "").trim();
@@ -145,14 +245,15 @@ export function mapBizinfoItemToNotice(
   if (!periodEnd) return null;
   if (!periodStart) periodStart = periodEnd;
 
-  const field = pickStr(row, [
-    "lclasClNm",
-    "typeNm",
-    "indstrlClNm",
-    "pldirSportRealmLclasIdNm",
-    "pblancClNm",
+  const field = pickSupportField(row);
+  const ministry = pickStr(row, [
+    "jrsdInsttNm",
+    "jrsd_instt_nm",
+    "insttNm",
+    "instt_nm",
+    "sprvInsttNm",
+    "sprv_instt_nm",
   ]);
-  const ministry = pickStr(row, ["jrsdInsttNm", "jrsd_instt_nm", "insttNm"]);
   const agency = pickStr(row, [
     "excInsttNm",
     "exc_instt_nm",
