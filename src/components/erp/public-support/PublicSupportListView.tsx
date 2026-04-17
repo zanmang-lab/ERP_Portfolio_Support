@@ -94,14 +94,14 @@ function SortTh({
     <th
       scope="col"
       aria-sort={ariaSort}
-      className={`border border-rose-200/80 px-0 py-0 text-center text-xs font-semibold ${className}`}
+      className={`border border-rose-200/80 px-0 py-0 text-center text-xs font-semibold break-keep ${className}`}
     >
       <button
         type="button"
         onClick={() => onSort(column)}
-        className="inline-flex min-h-[2.5rem] w-full cursor-pointer items-center justify-center gap-1 px-2 py-2.5 text-red-900 hover:bg-rose-200/50"
+        className="inline-flex min-h-[2.5rem] w-full min-w-0 cursor-pointer items-center justify-center gap-1 whitespace-nowrap px-2 py-2.5 text-red-900 hover:bg-rose-200/50"
       >
-        <span>{label}</span>
+        <span className="whitespace-nowrap">{label}</span>
         {active ? (
           sortDir === "asc" ? (
             <ArrowUp className="h-3.5 w-3.5 shrink-0" aria-hidden />
@@ -235,10 +235,20 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
             </div>
           ) : (
             <div className="min-h-0 flex-1 overflow-auto">
-              <table className="w-full min-w-[56rem] border-collapse text-sm">
+              <table className="w-full min-w-[60rem] table-fixed border-collapse text-sm">
+                <colgroup>
+                  <col className="w-[3%]" />
+                  <col className="w-[8%]" />
+                  <col className="w-[34%]" />
+                  <col className="w-[14%]" />
+                  <col className="w-[7%]" />
+                  <col className="w-[12%]" />
+                  <col className="w-[12%]" />
+                  <col className="w-[10%]" />
+                </colgroup>
                 <thead className="sticky top-0 z-10 bg-rose-100 text-red-900 shadow-sm">
                   <tr>
-                    <th className="border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold">
+                    <th className="min-w-[2.75rem] whitespace-nowrap border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold break-keep">
                       관심목록추가
                     </th>
                     <SortTh
@@ -247,6 +257,7 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
                       sortKey={sort.key}
                       sortDir={sort.dir}
                       onSort={handleSortClick}
+                      className="min-w-[5rem] whitespace-nowrap"
                     />
                     <SortTh
                       label="공고사업명"
@@ -254,8 +265,9 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
                       sortKey={sort.key}
                       sortDir={sort.dir}
                       onSort={handleSortClick}
+                      className="min-w-[12rem]"
                     />
-                    <th className="border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold whitespace-nowrap">
+                    <th className="min-w-[9.5rem] whitespace-nowrap border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold break-keep">
                       신청기간
                     </th>
                     <SortTh
@@ -264,7 +276,7 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
                       sortKey={sort.key}
                       sortDir={sort.dir}
                       onSort={handleSortClick}
-                      className="whitespace-nowrap"
+                      className="min-w-[5.5rem] whitespace-nowrap"
                     />
                     <SortTh
                       label="소관부처"
@@ -272,11 +284,12 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
                       sortKey={sort.key}
                       sortDir={sort.dir}
                       onSort={handleSortClick}
+                      className="min-w-[7rem] whitespace-nowrap"
                     />
-                    <th className="border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold">
+                    <th className="min-w-[7rem] whitespace-nowrap border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold break-keep">
                       사업수행기관
                     </th>
-                    <th className="border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold">
+                    <th className="min-w-[5.5rem] whitespace-nowrap border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold break-keep">
                       파일다운로드
                     </th>
                   </tr>
@@ -298,7 +311,7 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
                     const urgent = isDeadlineWithinThreeDays(daysUntil);
                     return (
                       <tr key={row.id} className="hover:bg-zinc-50/80">
-                        <td className="border border-zinc-200 px-2 py-2 text-center align-middle">
+                        <td className="min-w-[2.75rem] whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep">
                           <input
                             type="checkbox"
                             checked={!!interest[row.id]}
@@ -307,29 +320,29 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
                             aria-label={`${row.title} 관심목록`}
                           />
                         </td>
-                        <td className="border border-zinc-200 px-2 py-2 text-center align-middle">
+                        <td className="min-w-[5rem] whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep">
                           {row.field}
                         </td>
-                        <td className="border border-zinc-200 px-2 py-2 align-top text-left whitespace-normal break-words">
+                        <td className="min-w-[12rem] border border-zinc-200 px-2 py-2 align-top text-left break-keep break-words whitespace-normal">
                           {row.title}
                         </td>
-                        <td className="border border-zinc-200 px-2 py-2 text-center align-middle whitespace-nowrap">
+                        <td className="min-w-[9.5rem] whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep">
                           {formatApplicationPeriod(row)}
                         </td>
                         <td
-                          className={`border border-zinc-200 px-2 py-2 text-center align-middle tabular-nums ${
+                          className={`min-w-[5.5rem] whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep tabular-nums ${
                             urgent ? "font-bold text-red-600" : ""
                           }`}
                         >
                           {ddayLabel}
                         </td>
-                        <td className="border border-zinc-200 px-2 py-2 text-center align-middle">
+                        <td className="min-w-[7rem] whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep">
                           {row.ministry}
                         </td>
-                        <td className="border border-zinc-200 px-2 py-2 text-center align-middle">
+                        <td className="min-w-[7rem] whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep">
                           {row.agency}
                         </td>
-                        <td className="border border-zinc-200 px-2 py-2 text-center align-middle">
+                        <td className="min-w-[5.5rem] whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep">
                           {row.hasFile && row.fileUrl ? (
                             <a
                               href={row.fileUrl}
