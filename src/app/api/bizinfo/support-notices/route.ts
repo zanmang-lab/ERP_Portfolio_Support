@@ -17,7 +17,7 @@ export const runtime = "nodejs";
 export const maxDuration = 30;
 
 const BIZINFO_LIST_URL = "https://www.bizinfo.go.kr/uss/rss/bizinfoApi.do";
-/** 한 번에 읽는 바이트를 줄여 ECONNRESET(응답 도중 끊김) 완화. 페이지 수는 서버리스 시간 한도 고려 */
+/** 한 번에 읽는 바이트·페이지 수 균형 (ECONNRESET 완화를 위해 과도한 다중 호출은 피함) */
 const MAX_PAGES = 2;
 const PAGE_UNIT = 200;
 const FETCH_MS = 10_000;
