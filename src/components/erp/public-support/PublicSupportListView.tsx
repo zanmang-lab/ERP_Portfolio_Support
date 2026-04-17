@@ -227,149 +227,151 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
         </div>
       ) : null}
 
-      <div className="min-h-0 flex-1 overflow-hidden p-4">
-        <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
+      <div className="min-h-0 min-w-0 flex-1 overflow-hidden p-4">
+        <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
           {loadState === "loading" ? (
             <div className="flex flex-1 items-center justify-center p-8 text-sm text-zinc-500">
               목록을 불러오는 중…
             </div>
           ) : (
-            <div className="min-h-0 flex-1 overflow-auto">
-              <table className="w-full min-w-[60rem] table-fixed border-collapse text-sm">
-                <colgroup>
-                  <col className="w-[3%]" />
-                  <col className="w-[8%]" />
-                  <col className="w-[34%]" />
-                  <col className="w-[14%]" />
-                  <col className="w-[7%]" />
-                  <col className="w-[12%]" />
-                  <col className="w-[12%]" />
-                  <col className="w-[10%]" />
-                </colgroup>
-                <thead className="sticky top-0 z-10 bg-rose-100 text-red-900 shadow-sm">
-                  <tr>
-                    <th className="min-w-[2.75rem] whitespace-nowrap border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold break-keep">
-                      관심목록추가
-                    </th>
-                    <SortTh
-                      label="지원분야"
-                      column="field"
-                      sortKey={sort.key}
-                      sortDir={sort.dir}
-                      onSort={handleSortClick}
-                      className="min-w-[5rem] whitespace-nowrap"
-                    />
-                    <SortTh
-                      label="공고사업명"
-                      column="title"
-                      sortKey={sort.key}
-                      sortDir={sort.dir}
-                      onSort={handleSortClick}
-                      className="min-w-[12rem]"
-                    />
-                    <th className="min-w-[9.5rem] whitespace-nowrap border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold break-keep">
-                      신청기간
-                    </th>
-                    <SortTh
-                      label="마감 D-DAY"
-                      column="deadline"
-                      sortKey={sort.key}
-                      sortDir={sort.dir}
-                      onSort={handleSortClick}
-                      className="min-w-[5.5rem] whitespace-nowrap"
-                    />
-                    <SortTh
-                      label="소관부처"
-                      column="ministry"
-                      sortKey={sort.key}
-                      sortDir={sort.dir}
-                      onSort={handleSortClick}
-                      className="min-w-[7rem] whitespace-nowrap"
-                    />
-                    <th className="min-w-[7rem] whitespace-nowrap border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold break-keep">
-                      사업수행기관
-                    </th>
-                    <th className="min-w-[5.5rem] whitespace-nowrap border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold break-keep">
-                      파일다운로드
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white text-zinc-800">
-                  {displayRows.length === 0 && loadState === "ready" ? (
+            <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
+              <div className="h-full min-h-0 min-w-0 overflow-x-auto overflow-y-auto">
+                <table className="w-[1200px] min-w-[1200px] table-fixed border-collapse text-sm">
+                  <colgroup>
+                    <col className="w-[88px]" />
+                    <col className="w-[104px]" />
+                    <col />
+                    <col className="w-[148px]" />
+                    <col className="w-[100px]" />
+                    <col className="w-[136px]" />
+                    <col className="w-[136px]" />
+                    <col className="w-[104px]" />
+                  </colgroup>
+                  <thead className="sticky top-0 z-10 bg-rose-100 text-red-900 shadow-sm">
                     <tr>
-                      <td
-                        colSpan={8}
-                        className="border border-zinc-200 px-4 py-8 text-center text-sm text-zinc-500"
-                      >
-                        조건에 맞는 진행 중 공고가 없습니다.
-                      </td>
+                      <th className="whitespace-nowrap border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold break-keep">
+                        관심목록추가
+                      </th>
+                      <SortTh
+                        label="지원분야"
+                        column="field"
+                        sortKey={sort.key}
+                        sortDir={sort.dir}
+                        onSort={handleSortClick}
+                        className="whitespace-nowrap"
+                      />
+                      <SortTh
+                        label="공고사업명"
+                        column="title"
+                        sortKey={sort.key}
+                        sortDir={sort.dir}
+                        onSort={handleSortClick}
+                        className="min-w-0"
+                      />
+                      <th className="whitespace-nowrap border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold break-keep">
+                        신청기간
+                      </th>
+                      <SortTh
+                        label="마감 D-DAY"
+                        column="deadline"
+                        sortKey={sort.key}
+                        sortDir={sort.dir}
+                        onSort={handleSortClick}
+                        className="whitespace-nowrap"
+                      />
+                      <SortTh
+                        label="소관부처"
+                        column="ministry"
+                        sortKey={sort.key}
+                        sortDir={sort.dir}
+                        onSort={handleSortClick}
+                        className="whitespace-nowrap"
+                      />
+                      <th className="whitespace-nowrap border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold break-keep">
+                        사업수행기관
+                      </th>
+                      <th className="whitespace-nowrap border border-rose-200/80 px-2 py-2.5 text-center text-xs font-semibold break-keep">
+                        파일다운로드
+                      </th>
                     </tr>
-                  ) : null}
-                  {displayRows.map((row) => {
-                    const daysUntil = getDaysUntilDeadline(row.deadline);
-                    const ddayLabel = formatDdayLabel(daysUntil);
-                    const urgent = isDeadlineWithinThreeDays(daysUntil);
-                    return (
-                      <tr key={row.id} className="hover:bg-zinc-50/80">
-                        <td className="min-w-[2.75rem] whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep">
-                          <input
-                            type="checkbox"
-                            checked={!!interest[row.id]}
-                            onChange={() => toggleInterest(row.id)}
-                            className="h-4 w-4 rounded border-zinc-400 text-blue-600"
-                            aria-label={`${row.title} 관심목록`}
-                          />
-                        </td>
-                        <td className="min-w-[5rem] whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep">
-                          {row.field}
-                        </td>
-                        <td className="min-w-[12rem] border border-zinc-200 px-2 py-2 align-top text-left break-keep break-words whitespace-normal">
-                          {row.title}
-                        </td>
-                        <td className="min-w-[9.5rem] whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep">
-                          {formatApplicationPeriod(row)}
-                        </td>
+                  </thead>
+                  <tbody className="bg-white text-zinc-800">
+                    {displayRows.length === 0 && loadState === "ready" ? (
+                      <tr>
                         <td
-                          className={`min-w-[5.5rem] whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep tabular-nums ${
-                            urgent ? "font-bold text-red-600" : ""
-                          }`}
+                          colSpan={8}
+                          className="border border-zinc-200 px-4 py-8 text-center text-sm text-zinc-500"
                         >
-                          {ddayLabel}
-                        </td>
-                        <td className="min-w-[7rem] whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep">
-                          {row.ministry}
-                        </td>
-                        <td className="min-w-[7rem] whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep">
-                          {row.agency}
-                        </td>
-                        <td className="min-w-[5.5rem] whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep">
-                          {row.hasFile && row.fileUrl ? (
-                            <a
-                              href={row.fileUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex rounded p-1.5 text-emerald-700 hover:bg-emerald-50"
-                              aria-label="파일 다운로드"
-                            >
-                              <Download className="h-5 w-5" />
-                            </a>
-                          ) : row.hasFile ? (
-                            <button
-                              type="button"
-                              className="inline-flex rounded p-1.5 text-emerald-700 hover:bg-emerald-50"
-                              aria-label="파일 다운로드"
-                            >
-                              <Download className="h-5 w-5" />
-                            </button>
-                          ) : (
-                            <span className="text-zinc-400">—</span>
-                          )}
+                          조건에 맞는 진행 중 공고가 없습니다.
                         </td>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                    ) : null}
+                    {displayRows.map((row) => {
+                      const daysUntil = getDaysUntilDeadline(row.deadline);
+                      const ddayLabel = formatDdayLabel(daysUntil);
+                      const urgent = isDeadlineWithinThreeDays(daysUntil);
+                      return (
+                        <tr key={row.id} className="hover:bg-zinc-50/80">
+                          <td className="whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep">
+                            <input
+                              type="checkbox"
+                              checked={!!interest[row.id]}
+                              onChange={() => toggleInterest(row.id)}
+                              className="h-4 w-4 rounded border-zinc-400 text-blue-600"
+                              aria-label={`${row.title} 관심목록`}
+                            />
+                          </td>
+                          <td className="whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep">
+                            {row.field}
+                          </td>
+                          <td className="min-w-0 border border-zinc-200 px-2 py-2 align-top text-left break-keep break-words whitespace-normal">
+                            {row.title}
+                          </td>
+                          <td className="whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep">
+                            {formatApplicationPeriod(row)}
+                          </td>
+                          <td
+                            className={`whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep tabular-nums ${
+                              urgent ? "font-bold text-red-600" : ""
+                            }`}
+                          >
+                            {ddayLabel}
+                          </td>
+                          <td className="whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep">
+                            {row.ministry}
+                          </td>
+                          <td className="whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep">
+                            {row.agency}
+                          </td>
+                          <td className="whitespace-nowrap border border-zinc-200 px-2 py-2 text-center align-middle break-keep">
+                            {row.hasFile && row.fileUrl ? (
+                              <a
+                                href={row.fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex rounded p-1.5 text-emerald-700 hover:bg-emerald-50"
+                                aria-label="파일 다운로드"
+                              >
+                                <Download className="h-5 w-5" />
+                              </a>
+                            ) : row.hasFile ? (
+                              <button
+                                type="button"
+                                className="inline-flex rounded p-1.5 text-emerald-700 hover:bg-emerald-50"
+                                aria-label="파일 다운로드"
+                              >
+                                <Download className="h-5 w-5" />
+                              </button>
+                            ) : (
+                              <span className="text-zinc-400">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>
