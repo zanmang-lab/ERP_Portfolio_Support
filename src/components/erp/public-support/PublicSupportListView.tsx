@@ -204,9 +204,7 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
           <ChevronLeft className="h-4 w-4" aria-hidden />
           뒤로가기
         </button>
-        <h1 className="text-base font-semibold text-zinc-900">
-          [지원] 공공지원사업 목록
-        </h1>
+        <h1 className="text-base font-semibold text-zinc-900">공공지원사업</h1>
       </header>
 
       {usingMock && errorText ? (

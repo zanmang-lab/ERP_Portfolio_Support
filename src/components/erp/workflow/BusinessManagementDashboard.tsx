@@ -15,7 +15,6 @@ import {
   BUSINESS_STEP_PENDING_ID,
   businessManagementMainLineSteps,
   businessManagementPendingStep,
-  supportCurrentPageTitle,
 } from "@/config/erp-ui";
 import { BusinessStageListView } from "../business-management/BusinessStageListView";
 import { TaskCard } from "./TaskCard";
@@ -23,10 +22,10 @@ import { TaskCard } from "./TaskCard";
 type ViewMode = "flowchart" | "stage";
 
 const STEP_TITLES: Record<string, string> = {
-  [BUSINESS_STEP_APPLICATION_ID]: `${supportCurrentPageTitle} — 사업 신청`,
-  [BUSINESS_STEP_PENDING_ID]: `${supportCurrentPageTitle} — 대기중 사업`,
-  [BUSINESS_STEP_IN_PROGRESS_ID]: `${supportCurrentPageTitle} — 사업 진행 중`,
-  [BUSINESS_STEP_COMPLETED_ID]: `${supportCurrentPageTitle} — 사업 완료`,
+  [BUSINESS_STEP_APPLICATION_ID]: "사업 신청",
+  [BUSINESS_STEP_PENDING_ID]: "대기중 사업",
+  [BUSINESS_STEP_IN_PROGRESS_ID]: "사업 진행 중",
+  [BUSINESS_STEP_COMPLETED_ID]: "사업 완료",
 };
 
 const MAIN_ARROW_CLASS = "h-5 w-5 shrink-0 text-zinc-400";
@@ -46,7 +45,7 @@ export function BusinessManagementDashboard() {
   const doneRef = useRef<HTMLDivElement>(null);
 
   const stageTitle = useMemo(
-    () => (activeStageId ? STEP_TITLES[activeStageId] ?? supportCurrentPageTitle : ""),
+    () => (activeStageId ? STEP_TITLES[activeStageId] ?? "" : ""),
     [activeStageId],
   );
 
