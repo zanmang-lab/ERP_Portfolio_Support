@@ -5,7 +5,7 @@ import { ChevronLeft, Download } from "lucide-react";
 import {
   buildRenewalPlaceholderBody,
   RENEWAL_DOWNLOAD_FORMATS,
-  RENEWAL_TEMPLATE_FIELDS,
+  RENEWAL_TEMPLATE_FIELD_LABELS,
   RENEWAL_TEMPLATE_PREVIEW_TITLE,
 } from "@/data/renewalTemplateMock";
 
@@ -61,19 +61,17 @@ export function RenewalTemplateStageView({
               {RENEWAL_TEMPLATE_PREVIEW_TITLE}
             </h2>
             <div className="rounded-lg border border-zinc-200 bg-white p-6 shadow-md ring-1 ring-zinc-100">
-              <p className="mb-6 text-center text-base font-semibold text-zinc-900">
-                사업명
-              </p>
               <ul className="space-y-4 text-sm text-zinc-800">
-                {RENEWAL_TEMPLATE_FIELDS.map((f) => (
-                  <li key={f.label}>
+                {RENEWAL_TEMPLATE_FIELD_LABELS.map((label) => (
+                  <li key={label}>
                     <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-3">
                       <span className="shrink-0 font-medium text-zinc-700">
-                        {f.label}:
+                        {label}:
                       </span>
-                      <span className="min-w-0 flex-1 border-b border-dotted border-zinc-400 pb-0.5 text-zinc-600">
-                        {f.sampleValue}
-                      </span>
+                      <span
+                        className="min-h-[1.25rem] min-w-0 flex-1 border-b border-dotted border-zinc-400 pb-0.5"
+                        aria-label={`${label} 빈칸`}
+                      />
                     </div>
                   </li>
                 ))}
@@ -115,9 +113,9 @@ export function RenewalTemplateStageView({
             <p className="mt-1 text-center text-xs text-zinc-500">
               추가 형식은 연동 시 확장됩니다.
             </p>
-            <p className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950">
-              데모: 내려받는 파일은 UTF-8 텍스트 초안입니다. 실제 Office
-              바이너리가 아닙니다.
+            <p className="mt-3 rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-600">
+              내려받는 파일은 UTF-8 텍스트 초안입니다. 실제 Office 바이너리가
+              아닙니다.
             </p>
           </aside>
         </div>
