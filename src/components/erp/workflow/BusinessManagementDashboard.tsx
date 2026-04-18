@@ -16,6 +16,7 @@ import {
   businessManagementMainLineSteps,
   businessManagementPendingStep,
 } from "@/config/erp-ui";
+import { BusinessApplicationStageView } from "../business-management/BusinessApplicationStageView";
 import { BusinessStageListView } from "../business-management/BusinessStageListView";
 import { TaskCard } from "./TaskCard";
 
@@ -106,6 +107,13 @@ export function BusinessManagementDashboard() {
   }, [view]);
 
   if (view === "stage" && activeStageId) {
+    if (activeStageId === BUSINESS_STEP_APPLICATION_ID) {
+      return (
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+          <BusinessApplicationStageView onBack={backToFlow} />
+        </div>
+      );
+    }
     return (
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <BusinessStageListView title={stageTitle} onBack={backToFlow} />

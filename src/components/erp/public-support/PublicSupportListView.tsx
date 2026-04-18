@@ -13,6 +13,7 @@ import {
   isDeadlineWithinThreeDays,
 } from "@/lib/supportDeadline";
 import { SystemConfirmDialog } from "@/components/erp/ui/SystemConfirmDialog";
+import { useSupportWorkspace } from "@/context/SupportWorkspaceContext";
 
 type LoadState = "idle" | "loading" | "ready" | "error";
 
@@ -116,6 +117,8 @@ function SortTh({
 }
 
 export function PublicSupportListView({ onBack }: { onBack: () => void }) {
+  const { isPromoted, promoteNotice, removePromotedNotice } =
+    useSupportWorkspace();
   const [rows, setRows] = useState<PublicSupportNotice[]>([]);
   const [interest, setInterest] = useState<Record<string, boolean>>({});
   const [loadState, setLoadState] = useState<LoadState>("idle");
@@ -126,10 +129,6 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
     key: null,
     dir: "asc",
   });
-  /** 사업 진행 열: 이중 확인 후에만 true */
-  const [businessProgress, setBusinessProgress] = useState<
-    Record<string, boolean>
-  >({});
   /** 1차(info) → 2차(final) 확인 순서 */
   const [progressConfirm, setProgressConfirm] = useState<
     null | { notice: PublicSupportNotice; phase: "info" | "final" }
@@ -208,13 +207,9 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
         setProgressConfirm({ notice: row, phase: "info" });
         return;
       }
-      setBusinessProgress((prev) => {
-        const next = { ...prev };
-        delete next[row.id];
-        return next;
-      });
+      removePromotedNotice(row.id);
     },
-    [],
+    [removePromotedNotice],
   );
 
   const closeProgressConfirm = useCallback(() => {
@@ -230,11 +225,11 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
   const handleProgressFinalConfirm = useCallback(() => {
     setProgressConfirm((c) => {
       if (c?.phase === "final") {
-        setBusinessProgress((prev) => ({ ...prev, [c.notice.id]: true }));
+        promoteNotice(c.notice);
       }
       return null;
     });
-  }, []);
+  }, [promoteNotice]);
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-gray-50">
@@ -414,7 +409,7 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
                           <td className="whitespace-nowrap border border-zinc-200 px-4 py-2 text-center align-middle break-keep">
                             <input
                               type="checkbox"
-                              checked={!!businessProgress[row.id]}
+                              checked={isPromoted(row.id)}
                               onChange={(e) =>
                                 handleBusinessProgressChange(
                                   row,

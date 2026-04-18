@@ -20,6 +20,7 @@ import {
   workflowPageTitle,
 } from "@/config/erp-ui";
 import { getModuleSubmenuItems } from "@/config/erp-module-menus";
+import { SupportWorkspaceProvider } from "@/context/SupportWorkspaceContext";
 import { Gnb } from "./Gnb";
 import { MainBody } from "./MainBody";
 import { ModuleLnb } from "./ModuleLnb";
@@ -166,14 +167,16 @@ export function ErpShell() {
                     : undefined
           }
         />
-        <MainBody
-          lnbOpen={lnbOpen}
-          lnbKind={lnbKind}
-          activeWorkflowId={activeWorkflowId}
-          activeSupportMenuId={activeSupportMenuId}
-          activeModuleMenuId={activeModuleMenuId}
-          activeModuleMenuLabel={activeModuleMenuLabel}
-        />
+        <SupportWorkspaceProvider>
+          <MainBody
+            lnbOpen={lnbOpen}
+            lnbKind={lnbKind}
+            activeWorkflowId={activeWorkflowId}
+            activeSupportMenuId={activeSupportMenuId}
+            activeModuleMenuId={activeModuleMenuId}
+            activeModuleMenuLabel={activeModuleMenuLabel}
+          />
+        </SupportWorkspaceProvider>
       </div>
     </div>
   );
