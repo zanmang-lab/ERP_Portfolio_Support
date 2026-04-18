@@ -42,7 +42,7 @@ export function TaskCard({
 }: {
   step: WorkflowStep;
   onActivate?: (id: string) => void;
-  /** workflow: STEP1 레일 스타일. flowchart: 전체지원사업 플로우 전용(둥근 아이콘). */
+  /** workflow: STEP1 레일 스타일. flowchart: 전체지원공고 플로우 전용(둥근 아이콘). */
   surface?: "workflow" | "flowchart";
 }) {
   const muted = step.variant === "muted";

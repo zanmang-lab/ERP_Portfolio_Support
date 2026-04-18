@@ -56,10 +56,10 @@ export const SUPPORT_GNB_ID = "support";
 /** LNB item that shows the Step 1 organization workflow dashboard */
 export const WORKFLOW_STEP1_ORG_ID = "step1-org";
 
-/** 지원 LNB: 전체지원사업 워크플로 대시보드 */
+/** 지원 LNB: 전체지원공고 워크플로 대시보드 */
 export const SUPPORT_ALL_MENU_ID = "support-all";
 
-/** 전체지원사업 플로우: 공공지원사업 카드 → 공고 목록 화면 */
+/** 전체지원공고 플로우: 공공지원사업 카드 → 공고 목록 화면 */
 export const TOTAL_SUPPORT_PUBLIC_STEP_ID = "ts-public";
 
 /** 좌측 보조 패널: 구축(STEP 목록) vs 지원 vs 일반 모듈 서브메뉴 */
@@ -177,13 +177,12 @@ export const setupLnbTitle = "구축";
 export const supportLnbTitle = "지원";
 
 export const supportLnbItems: SetupLnbItem[] = [
-  { id: SUPPORT_ALL_MENU_ID, label: "[지원] 전체지원사업" },
-  { id: "support-current", label: "[지원] 진행 중인 사업" },
+  { id: SUPPORT_ALL_MENU_ID, label: "[지원] 전체지원공고" },
+  { id: "support-current", label: "[지원] 사업관리" },
   { id: "support-docs", label: "[지원] 서류관리" },
-  { id: "support-aftercare", label: "[지원] 사후관리" },
 ];
 
-export const totalSupportPageTitle = "[지원] 전체지원사업";
+export const totalSupportPageTitle = "[지원] 전체지원공고";
 
 export const totalSupportWorkflow: WorkflowRow[] = [
   {
