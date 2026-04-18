@@ -110,6 +110,37 @@ export const businessManagementPendingStep: WorkflowStep = {
   variant: "default",
 };
 
+/** 지원 LNB: 서류관리 프로세스 (LNB id와 동일) */
+export const SUPPORT_DOCS_MENU_ID = "support-docs";
+
+export const documentsPageTitle = "[지원] 서류관리";
+
+export const DOC_STEP_VALID_YES_ID = "doc-valid-yes";
+export const DOC_STEP_VALID_NO_ID = "doc-valid-no";
+export const DOC_STEP_RENEW_PER_PROJECT_ID = "doc-renew-per-project";
+
+/** 서류관리: 유효기간 O → X → 매사업 갱신 */
+export const documentManagementSteps: WorkflowStep[] = [
+  {
+    id: DOC_STEP_VALID_YES_ID,
+    label: "유효기간 O 서류",
+    iconKey: "keyboard",
+    variant: "default",
+  },
+  {
+    id: DOC_STEP_VALID_NO_ID,
+    label: "유효기간 X 서류",
+    iconKey: "keyboard",
+    variant: "default",
+  },
+  {
+    id: DOC_STEP_RENEW_PER_PROJECT_ID,
+    label: "매사업 갱신 서류",
+    iconKey: "keyboard",
+    variant: "default",
+  },
+];
+
 /** 좌측 보조 패널: 구축(STEP 목록) vs 지원 vs 일반 모듈 서브메뉴 */
 export type ErpLnbKind = "setup" | "module" | "support" | null;
 
@@ -227,7 +258,7 @@ export const supportLnbTitle = "지원";
 export const supportLnbItems: SetupLnbItem[] = [
   { id: SUPPORT_ALL_MENU_ID, label: "[지원] 전체지원공고" },
   { id: SUPPORT_CURRENT_MENU_ID, label: "[지원] 사업관리" },
-  { id: "support-docs", label: "[지원] 서류관리" },
+  { id: SUPPORT_DOCS_MENU_ID, label: "[지원] 서류관리" },
 ];
 
 export const totalSupportPageTitle = "[지원] 전체지원공고";

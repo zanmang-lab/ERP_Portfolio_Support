@@ -5,6 +5,7 @@ import {
   SETUP_GNB_ID,
   SUPPORT_ALL_MENU_ID,
   SUPPORT_CURRENT_MENU_ID,
+  SUPPORT_DOCS_MENU_ID,
   SUPPORT_GNB_ID,
   WORKFLOW_STEP1_ORG_ID,
   ErpLnbKind,
@@ -13,6 +14,7 @@ import {
   setupLnbTitle,
   supportLnbItems,
   supportLnbTitle,
+  documentsPageTitle,
   supportCurrentPageTitle,
   totalSupportPageTitle,
   workflowPageTitle,
@@ -90,8 +92,13 @@ export function ErpShell() {
   const showTotalSupport = activeSupportMenuId === SUPPORT_ALL_MENU_ID;
   const showBusinessManagement =
     activeSupportMenuId === SUPPORT_CURRENT_MENU_ID;
+  const showDocumentManagement =
+    activeSupportMenuId === SUPPORT_DOCS_MENU_ID;
   const topBarMode =
-    showWorkflow || showTotalSupport || showBusinessManagement
+    showWorkflow ||
+    showTotalSupport ||
+    showBusinessManagement ||
+    showDocumentManagement
       ? "workflow"
       : "default";
 
@@ -152,9 +159,11 @@ export function ErpShell() {
               ? totalSupportPageTitle
               : showBusinessManagement
                 ? supportCurrentPageTitle
-                : showWorkflow
-                  ? workflowPageTitle
-                  : undefined
+                : showDocumentManagement
+                  ? documentsPageTitle
+                  : showWorkflow
+                    ? workflowPageTitle
+                    : undefined
           }
         />
         <MainBody
