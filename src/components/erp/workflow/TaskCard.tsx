@@ -75,7 +75,7 @@ export function TaskCard({
 }: {
   step: WorkflowStep;
   onActivate?: (id: string) => void;
-  /** workflow: STEP1 레일 스타일. flowchart: 전체지원공고 플로우 전용(둥근 아이콘). */
+  /** workflow: STEP1 레일 스타일. flowchart: 공고탐색 플로우 전용(둥근 아이콘). */
   surface?: "workflow" | "flowchart";
   /** flowchart: 분기 단계(대기중 등) 점선 테두리 */
   flowchartOutline?: "solid" | "dashed";
