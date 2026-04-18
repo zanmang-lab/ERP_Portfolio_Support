@@ -76,12 +76,6 @@ export function RenewalTemplateStageView({
                   </li>
                 ))}
               </ul>
-              <p className="mt-6 text-center text-lg leading-none text-zinc-400">
-                ⋯
-              </p>
-              <p className="mt-2 text-center text-xs text-zinc-500">
-                이하 필드는 동일 양식으로 이어집니다.
-              </p>
             </div>
           </section>
 
@@ -109,14 +103,6 @@ export function RenewalTemplateStageView({
                 </li>
               ))}
             </ul>
-            <p className="mt-4 text-center text-lg text-zinc-400">⋯</p>
-            <p className="mt-1 text-center text-xs text-zinc-500">
-              추가 형식은 연동 시 확장됩니다.
-            </p>
-            <p className="mt-3 rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-600">
-              내려받는 파일은 UTF-8 텍스트 초안입니다. 실제 Office 바이너리가
-              아닙니다.
-            </p>
           </aside>
         </div>
       </div>
