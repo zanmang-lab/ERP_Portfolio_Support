@@ -13,7 +13,14 @@ export type GnbIconKey =
   | "handshake"
   | "chevronDown";
 
-export type WorkflowStepIconKey = "keyboard" | "monitorSuccess";
+export type WorkflowStepIconKey =
+  | "keyboard"
+  | "monitorSuccess"
+  /** 사업관리 플로우 등 */
+  | "send"
+  | "activity"
+  | "checkCircle"
+  | "clock";
 
 export type WorkflowStepVariant = "default" | "success" | "muted";
 
@@ -61,6 +68,47 @@ export const SUPPORT_ALL_MENU_ID = "support-all";
 
 /** 전체지원공고 플로우: 공공지원사업 카드 → 공고 목록 화면 */
 export const TOTAL_SUPPORT_PUBLIC_STEP_ID = "ts-public";
+
+/** 지원 LNB: 사업관리 프로세스 대시보드 (LNB id와 동일) */
+export const SUPPORT_CURRENT_MENU_ID = "support-current";
+
+export const supportCurrentPageTitle = "[지원] 사업관리";
+
+/** 사업관리 단계 id */
+export const BUSINESS_STEP_APPLICATION_ID = "bm-apply";
+export const BUSINESS_STEP_PENDING_ID = "bm-pending";
+export const BUSINESS_STEP_IN_PROGRESS_ID = "bm-progress";
+export const BUSINESS_STEP_COMPLETED_ID = "bm-done";
+
+/** 상단 실선 흐름: 신청 → 진행 → 완료 */
+export const businessManagementMainLineSteps: WorkflowStep[] = [
+  {
+    id: BUSINESS_STEP_APPLICATION_ID,
+    label: "사업 신청",
+    iconKey: "send",
+    variant: "default",
+  },
+  {
+    id: BUSINESS_STEP_IN_PROGRESS_ID,
+    label: "사업 진행 중",
+    iconKey: "activity",
+    variant: "default",
+  },
+  {
+    id: BUSINESS_STEP_COMPLETED_ID,
+    label: "사업 완료",
+    iconKey: "checkCircle",
+    variant: "default",
+  },
+];
+
+/** 분기: 대기중 사업 (점선 흐름) */
+export const businessManagementPendingStep: WorkflowStep = {
+  id: BUSINESS_STEP_PENDING_ID,
+  label: "대기중 사업",
+  iconKey: "clock",
+  variant: "default",
+};
 
 /** 좌측 보조 패널: 구축(STEP 목록) vs 지원 vs 일반 모듈 서브메뉴 */
 export type ErpLnbKind = "setup" | "module" | "support" | null;
@@ -178,7 +226,7 @@ export const supportLnbTitle = "지원";
 
 export const supportLnbItems: SetupLnbItem[] = [
   { id: SUPPORT_ALL_MENU_ID, label: "[지원] 전체지원공고" },
-  { id: "support-current", label: "[지원] 사업관리" },
+  { id: SUPPORT_CURRENT_MENU_ID, label: "[지원] 사업관리" },
   { id: "support-docs", label: "[지원] 서류관리" },
 ];
 

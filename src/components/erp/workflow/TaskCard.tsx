@@ -1,7 +1,17 @@
 "use client";
 
-import { CheckCircle2, Keyboard, Monitor } from "lucide-react";
+import {
+  Activity,
+  CheckCircle2,
+  Clock,
+  Keyboard,
+  Monitor,
+  Send,
+} from "lucide-react";
 import type { WorkflowStep } from "@/config/erp-ui";
+
+const iconClass = (muted: boolean) =>
+  muted ? "text-zinc-300" : "text-amber-500";
 
 function StepVisual({
   iconKey,
@@ -25,9 +35,30 @@ function StepVisual({
     );
   }
 
+  if (iconKey === "send") {
+    return (
+      <Send className={`h-5 w-5 shrink-0 ${iconClass(muted)}`} strokeWidth={1.5} />
+    );
+  }
+  if (iconKey === "activity") {
+    return (
+      <Activity className={`h-5 w-5 shrink-0 ${iconClass(muted)}`} strokeWidth={1.5} />
+    );
+  }
+  if (iconKey === "checkCircle") {
+    return (
+      <CheckCircle2 className={`h-5 w-5 shrink-0 ${iconClass(muted)}`} strokeWidth={1.5} />
+    );
+  }
+  if (iconKey === "clock") {
+    return (
+      <Clock className={`h-5 w-5 shrink-0 ${iconClass(muted)}`} strokeWidth={1.5} />
+    );
+  }
+
   return (
     <Keyboard
-      className={`h-5 w-5 shrink-0 ${muted ? "text-zinc-300" : "text-amber-500"}`}
+      className={`h-5 w-5 shrink-0 ${iconClass(muted)}`}
       strokeWidth={1.5}
     />
   );
@@ -39,22 +70,28 @@ export function TaskCard({
   step,
   onActivate,
   surface = "workflow",
+  flowchartOutline = "solid",
 }: {
   step: WorkflowStep;
   onActivate?: (id: string) => void;
   /** workflow: STEP1 레일 스타일. flowchart: 전체지원공고 플로우 전용(둥근 아이콘). */
   surface?: "workflow" | "flowchart";
+  /** flowchart: 분기 단계(대기중 등) 점선 테두리 */
+  flowchartOutline?: "solid" | "dashed";
 }) {
   const muted = step.variant === "muted";
   const multilineLabel = step.label.includes("\n");
   const watchlistEmphasis = step.id === WATCHLIST_STEP_ID;
   const flowchart = surface === "flowchart";
+  const branchDashed = flowchart && flowchartOutline === "dashed";
 
   const baseButton = flowchart
-    ? `flex min-w-[6.5rem] w-[7.25rem] max-w-[10rem] shrink-0 flex-col items-center gap-1.5 rounded-xl border bg-white/95 px-2 py-2 text-center text-xs shadow-sm transition hover:border-zinc-300 hover:shadow ${
+    ? `flex min-w-[6.5rem] w-[7.25rem] max-w-[10rem] shrink-0 flex-col items-center gap-1.5 rounded-xl border bg-white/95 px-2 py-2 text-center text-xs shadow-sm transition hover:shadow ${
         watchlistEmphasis
           ? "border-emerald-400 ring-2 ring-emerald-400/45 shadow-md hover:border-emerald-500 hover:ring-emerald-400/55"
-          : "border-zinc-200/90"
+          : branchDashed
+            ? "border-2 border-dashed border-amber-400/85 hover:border-amber-500/90"
+            : "border border-zinc-200/90 hover:border-zinc-300"
       }`
     : `flex min-w-[5.5rem] w-[6.5rem] max-w-[8.5rem] shrink-0 flex-col items-center gap-1 rounded border bg-white px-1 py-1.5 text-center text-xs shadow-sm transition hover:border-zinc-400 hover:shadow ${
         watchlistEmphasis

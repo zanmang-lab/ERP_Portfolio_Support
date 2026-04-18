@@ -2,11 +2,13 @@
 
 import {
   SUPPORT_ALL_MENU_ID,
+  SUPPORT_CURRENT_MENU_ID,
   WORKFLOW_STEP1_ORG_ID,
   setupLnbItems,
   supportLnbItems,
   type ErpLnbKind,
 } from "@/config/erp-ui";
+import { BusinessManagementDashboard } from "./workflow/BusinessManagementDashboard";
 import { FloatingActionButton } from "./workflow/FloatingActionButton";
 import { TotalSupportDashboard } from "./workflow/TotalSupportDashboard";
 import { WorkflowDashboard } from "./workflow/WorkflowDashboard";
@@ -39,6 +41,8 @@ export function MainBody({
   const showOrgWorkflow = activeWorkflowId === WORKFLOW_STEP1_ORG_ID;
   const showTotalSupport =
     activeSupportMenuId === SUPPORT_ALL_MENU_ID;
+  const showBusinessManagement =
+    activeSupportMenuId === SUPPORT_CURRENT_MENU_ID;
   const showOtherSetupSelection =
     activeWorkflowId !== null && activeWorkflowId !== WORKFLOW_STEP1_ORG_ID;
 
@@ -59,6 +63,14 @@ export function MainBody({
     return (
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <TotalSupportDashboard />
+      </div>
+    );
+  }
+
+  if (showBusinessManagement) {
+    return (
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <BusinessManagementDashboard />
       </div>
     );
   }
