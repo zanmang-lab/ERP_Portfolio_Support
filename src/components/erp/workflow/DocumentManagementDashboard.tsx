@@ -7,6 +7,7 @@ import {
   documentManagementSteps,
   documentUploadStep,
 } from "@/config/erp-ui";
+import { RenewalTemplateStageView } from "../document-management/RenewalTemplateStageView";
 import { BusinessStageListView } from "../business-management/BusinessStageListView";
 import { TaskCard } from "./TaskCard";
 
@@ -41,6 +42,13 @@ export function DocumentManagementDashboard() {
   }, []);
 
   if (view === "detail" && activeStepId) {
+    if (activeStepId === DOC_STEP_RENEW_PER_PROJECT_ID) {
+      return (
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+          <RenewalTemplateStageView onBack={backToFlow} />
+        </div>
+      );
+    }
     return (
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <BusinessStageListView title={detailTitle} onBack={backToFlow} />

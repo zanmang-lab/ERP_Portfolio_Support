@@ -1,0 +1,127 @@
+"use client";
+
+import { useCallback } from "react";
+import { ChevronLeft, Download } from "lucide-react";
+import {
+  buildRenewalPlaceholderBody,
+  RENEWAL_DOWNLOAD_FORMATS,
+  RENEWAL_TEMPLATE_FIELDS,
+  RENEWAL_TEMPLATE_PREVIEW_TITLE,
+} from "@/data/renewalTemplateMock";
+
+const DOWNLOAD_FILENAME_BASE = "사업계획서_양식";
+
+export function RenewalTemplateStageView({
+  onBack,
+}: {
+  onBack: () => void;
+}) {
+  const handleDownload = useCallback((ext: string) => {
+    const body = buildRenewalPlaceholderBody(ext);
+    const blob = new Blob([body], {
+      type: "text/plain;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${DOWNLOAD_FILENAME_BASE}.${ext}`;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }, []);
+
+  return (
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-gray-50">
+      <header className="flex shrink-0 items-center gap-3 border-b border-zinc-200 bg-gray-50 px-4 py-3">
+        <button
+          type="button"
+          onClick={onBack}
+          className="inline-flex items-center gap-1.5 rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50"
+        >
+          <ChevronLeft className="h-4 w-4" aria-hidden />
+          뒤로가기
+        </button>
+        <h1 className="text-base font-semibold text-zinc-900">
+          매사업 갱신 서류
+        </h1>
+      </header>
+
+      <div className="min-h-0 flex-1 overflow-auto p-4">
+        <div className="mx-auto flex max-w-6xl flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
+          <section
+            className="min-w-0 flex-1"
+            aria-labelledby="renewal-preview-heading"
+          >
+            <h2
+              id="renewal-preview-heading"
+              className="mb-3 text-sm font-semibold text-zinc-800"
+            >
+              {RENEWAL_TEMPLATE_PREVIEW_TITLE}
+            </h2>
+            <div className="rounded-lg border border-zinc-200 bg-white p-6 shadow-md ring-1 ring-zinc-100">
+              <p className="mb-6 text-center text-base font-semibold text-zinc-900">
+                사업명
+              </p>
+              <ul className="space-y-4 text-sm text-zinc-800">
+                {RENEWAL_TEMPLATE_FIELDS.map((f) => (
+                  <li key={f.label}>
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-3">
+                      <span className="shrink-0 font-medium text-zinc-700">
+                        {f.label}:
+                      </span>
+                      <span className="min-w-0 flex-1 border-b border-dotted border-zinc-400 pb-0.5 text-zinc-600">
+                        {f.sampleValue}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-6 text-center text-lg leading-none text-zinc-400">
+                ⋯
+              </p>
+              <p className="mt-2 text-center text-xs text-zinc-500">
+                이하 필드는 동일 양식으로 이어집니다.
+              </p>
+            </div>
+          </section>
+
+          <aside
+            className="w-full shrink-0 lg:w-72"
+            aria-label="양식 파일 형식별 다운로드"
+          >
+            <h2 className="mb-3 text-sm font-semibold text-zinc-800">
+              다운로드
+            </h2>
+            <ul className="flex flex-col gap-2">
+              {RENEWAL_DOWNLOAD_FORMATS.map(({ ext, label }) => (
+                <li key={ext}>
+                  <button
+                    type="button"
+                    onClick={() => handleDownload(ext)}
+                    className="flex w-full items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-left text-sm text-zinc-800 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50"
+                    aria-label={`${ext}로 다운로드`}
+                  >
+                    <span>{label}</span>
+                    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded border border-zinc-200 bg-zinc-50 text-emerald-700">
+                      <Download className="h-5 w-5" aria-hidden />
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-4 text-center text-lg text-zinc-400">⋯</p>
+            <p className="mt-1 text-center text-xs text-zinc-500">
+              추가 형식은 연동 시 확장됩니다.
+            </p>
+            <p className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950">
+              데모: 내려받는 파일은 UTF-8 텍스트 초안입니다. 실제 Office
+              바이너리가 아닙니다.
+            </p>
+          </aside>
+        </div>
+      </div>
+    </div>
+  );
+}
