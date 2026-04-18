@@ -71,6 +71,7 @@ export function TaskCard({
   onActivate,
   surface = "workflow",
   flowchartOutline = "solid",
+  interactive = true,
 }: {
   step: WorkflowStep;
   onActivate?: (id: string) => void;
@@ -78,10 +79,14 @@ export function TaskCard({
   surface?: "workflow" | "flowchart";
   /** flowchart: 분기 단계(대기중 등) 점선 테두리 */
   flowchartOutline?: "solid" | "dashed";
+  /** false면 필터링 카드처럼 비활성(클릭 불가, 톤 다운) */
+  interactive?: boolean;
 }) {
   const muted = step.variant === "muted";
+  const locked = !interactive;
+  const disabled = muted || locked;
   const multilineLabel = step.label.includes("\n");
-  const watchlistEmphasis = step.id === WATCHLIST_STEP_ID;
+  const watchlistEmphasis = step.id === WATCHLIST_STEP_ID && interactive && !muted;
   const flowchart = surface === "flowchart";
   const branchDashed = flowchart && flowchartOutline === "dashed";
 
@@ -107,11 +112,15 @@ export function TaskCard({
     <button
       type="button"
       onClick={() => onActivate?.(step.id)}
-      className={`${baseButton} ${muted ? "cursor-not-allowed opacity-60" : ""}`}
-      disabled={muted}
+      className={`${baseButton} ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
+      disabled={disabled}
+      aria-disabled={disabled}
     >
       <div className={iconShell}>
-        <StepVisual iconKey={step.iconKey} variant={step.variant} />
+        <StepVisual
+          iconKey={step.iconKey}
+          variant={disabled ? "muted" : step.variant}
+        />
       </div>
       <span
         className={`px-0.5 text-center font-medium leading-snug ${
@@ -120,7 +129,7 @@ export function TaskCard({
             : flowchart
               ? "text-[0.7rem] leading-tight text-balance"
               : "whitespace-nowrap"
-        } ${muted ? "text-zinc-400" : "text-zinc-800"}`}
+        } ${disabled ? "text-zinc-400" : "text-zinc-800"}`}
       >
         {step.label}
       </span>

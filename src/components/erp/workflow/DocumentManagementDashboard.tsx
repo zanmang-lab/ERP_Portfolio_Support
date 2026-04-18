@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import {
+  DOC_STEP_RENEW_PER_PROJECT_ID,
   documentManagementSteps,
   documentUploadStep,
 } from "@/config/erp-ui";
@@ -57,6 +58,7 @@ export function DocumentManagementDashboard() {
           <TaskCard
             step={documentUploadStep}
             surface="flowchart"
+            interactive={false}
             onActivate={openDetail}
           />
           <ArrowRight
@@ -70,6 +72,7 @@ export function DocumentManagementDashboard() {
                 key={step.id}
                 step={step}
                 surface="flowchart"
+                interactive={step.id === DOC_STEP_RENEW_PER_PROJECT_ID}
                 onActivate={openDetail}
               />
             ))}

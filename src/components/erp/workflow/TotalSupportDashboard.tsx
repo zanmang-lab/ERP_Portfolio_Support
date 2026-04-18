@@ -44,6 +44,7 @@ export function TotalSupportDashboard() {
                 key={step.id}
                 step={step}
                 surface="flowchart"
+                interactive={step.id === TOTAL_SUPPORT_PUBLIC_STEP_ID}
                 onActivate={handleClassifyActivate}
               />
             ))}
@@ -53,13 +54,13 @@ export function TotalSupportDashboard() {
             strokeWidth={2}
             aria-hidden
           />
-          <TaskCard step={filterStep} surface="flowchart" />
+          <TaskCard step={filterStep} surface="flowchart" interactive={false} />
           <ArrowRight
             className="h-5 w-5 shrink-0 text-zinc-400"
             strokeWidth={2}
             aria-hidden
           />
-          <TaskCard step={watchlistStep} surface="flowchart" />
+          <TaskCard step={watchlistStep} surface="flowchart" interactive={false} />
         </section>
       </div>
     </div>

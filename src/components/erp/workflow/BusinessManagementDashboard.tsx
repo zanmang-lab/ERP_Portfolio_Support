@@ -155,6 +155,7 @@ export function BusinessManagementDashboard() {
                 <TaskCard
                   step={applyStep}
                   surface="flowchart"
+                  interactive={applyStep.id === BUSINESS_STEP_APPLICATION_ID}
                   onActivate={openStage}
                 />
               </div>
@@ -164,6 +165,7 @@ export function BusinessManagementDashboard() {
               <TaskCard
                 step={progressStep}
                 surface="flowchart"
+                interactive={false}
                 onActivate={openStage}
               />
             </div>
@@ -172,6 +174,7 @@ export function BusinessManagementDashboard() {
               <TaskCard
                 step={doneStep}
                 surface="flowchart"
+                interactive={doneStep.id === BUSINESS_STEP_COMPLETED_ID}
                 onActivate={openStage}
               />
             </div>
@@ -184,6 +187,7 @@ export function BusinessManagementDashboard() {
                   step={businessManagementPendingStep}
                   surface="flowchart"
                   flowchartOutline="dashed"
+                  interactive={false}
                   onActivate={openStage}
                 />
               </div>
