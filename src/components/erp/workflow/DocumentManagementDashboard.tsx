@@ -52,8 +52,18 @@ export function DocumentManagementDashboard() {
       <div className="flex min-h-0 min-w-0 flex-1 items-start justify-start overflow-x-auto overflow-y-auto overscroll-x-contain p-6">
         <section
           className="flex min-w-min flex-nowrap items-center gap-3 sm:gap-4"
-          aria-label="서류관리 프로세스: 유효기간, 매사업 갱신, 업로드"
+          aria-label="서류관리 프로세스: 업로드 후 유효기간·매사업 갱신 서류"
         >
+          <TaskCard
+            step={documentUploadStep}
+            surface="flowchart"
+            onActivate={openDetail}
+          />
+          <ArrowRight
+            className="h-5 w-5 shrink-0 text-zinc-400"
+            strokeWidth={2}
+            aria-hidden
+          />
           <div className="flex shrink-0 flex-col gap-2">
             {documentManagementSteps.map((step) => (
               <TaskCard
@@ -64,16 +74,6 @@ export function DocumentManagementDashboard() {
               />
             ))}
           </div>
-          <ArrowRight
-            className="h-5 w-5 shrink-0 text-zinc-400"
-            strokeWidth={2}
-            aria-hidden
-          />
-          <TaskCard
-            step={documentUploadStep}
-            surface="flowchart"
-            onActivate={openDetail}
-          />
         </section>
       </div>
     </div>

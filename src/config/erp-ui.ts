@@ -120,7 +120,7 @@ export const DOC_STEP_VALID_NO_ID = "doc-valid-no";
 export const DOC_STEP_RENEW_PER_PROJECT_ID = "doc-renew-per-project";
 export const DOC_STEP_UPLOAD_ID = "doc-upload";
 
-/** 서류관리: 화면 왼쪽에 세로 나열하는 3단계(유효기간·매사업 갱신). 업로드는 별도 `documentUploadStep`. */
+/** 서류관리: 업로드 뒤 화살표 오른쪽에 세로 나열하는 3단계(유효기간·매사업 갱신). 업로드 카드는 `documentUploadStep`. */
 export const documentManagementSteps: WorkflowStep[] = [
   {
     id: DOC_STEP_VALID_YES_ID,
@@ -142,7 +142,7 @@ export const documentManagementSteps: WorkflowStep[] = [
   },
 ];
 
-/** 서류관리: 세로 3단계 뒤 화살표로 이어지는 업로드 단계 */
+/** 서류관리: 플로우 선두(왼쪽) 업로드 단계 — 뒤이어 세로 3카드로 이어짐 */
 export const documentUploadStep: WorkflowStep = {
   id: DOC_STEP_UPLOAD_ID,
   label: "업로드",
