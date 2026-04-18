@@ -118,8 +118,9 @@ export const documentsPageTitle = "[지원] 서류관리";
 export const DOC_STEP_VALID_YES_ID = "doc-valid-yes";
 export const DOC_STEP_VALID_NO_ID = "doc-valid-no";
 export const DOC_STEP_RENEW_PER_PROJECT_ID = "doc-renew-per-project";
+export const DOC_STEP_UPLOAD_ID = "doc-upload";
 
-/** 서류관리: 유효기간 O → X → 매사업 갱신 */
+/** 서류관리: 화면 왼쪽에 세로 나열하는 3단계(유효기간·매사업 갱신). 업로드는 별도 `documentUploadStep`. */
 export const documentManagementSteps: WorkflowStep[] = [
   {
     id: DOC_STEP_VALID_YES_ID,
@@ -140,6 +141,14 @@ export const documentManagementSteps: WorkflowStep[] = [
     variant: "default",
   },
 ];
+
+/** 서류관리: 세로 3단계 뒤 화살표로 이어지는 업로드 단계 */
+export const documentUploadStep: WorkflowStep = {
+  id: DOC_STEP_UPLOAD_ID,
+  label: "업로드",
+  iconKey: "keyboard",
+  variant: "default",
+};
 
 /** 좌측 보조 패널: 구축(STEP 목록) vs 지원 vs 일반 모듈 서브메뉴 */
 export type ErpLnbKind = "setup" | "module" | "support" | null;

@@ -1,7 +1,11 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { documentManagementSteps } from "@/config/erp-ui";
+import { ArrowRight } from "lucide-react";
+import {
+  documentManagementSteps,
+  documentUploadStep,
+} from "@/config/erp-ui";
 import { BusinessStageListView } from "../business-management/BusinessStageListView";
 import { TaskCard } from "./TaskCard";
 
@@ -12,7 +16,11 @@ export function DocumentManagementDashboard() {
   const [activeStepId, setActiveStepId] = useState<string | null>(null);
 
   const stepTitles = useMemo(
-    () => Object.fromEntries(documentManagementSteps.map((s) => [s.id, s.label])),
+    () =>
+      Object.fromEntries([
+        ...documentManagementSteps.map((s) => [s.id, s.label] as const),
+        [documentUploadStep.id, documentUploadStep.label] as const,
+      ]),
     [],
   );
 
@@ -44,16 +52,28 @@ export function DocumentManagementDashboard() {
       <div className="flex min-h-0 min-w-0 flex-1 items-start justify-start overflow-x-auto overflow-y-auto overscroll-x-contain p-6">
         <section
           className="flex min-w-min flex-nowrap items-center gap-3 sm:gap-4"
-          aria-label="서류관리 프로세스: 유효기간, 매사업 갱신"
+          aria-label="서류관리 프로세스: 유효기간, 매사업 갱신, 업로드"
         >
-          {documentManagementSteps.map((step) => (
-            <TaskCard
-              key={step.id}
-              step={step}
-              surface="flowchart"
-              onActivate={openDetail}
-            />
-          ))}
+          <div className="flex shrink-0 flex-col gap-2">
+            {documentManagementSteps.map((step) => (
+              <TaskCard
+                key={step.id}
+                step={step}
+                surface="flowchart"
+                onActivate={openDetail}
+              />
+            ))}
+          </div>
+          <ArrowRight
+            className="h-5 w-5 shrink-0 text-zinc-400"
+            strokeWidth={2}
+            aria-hidden
+          />
+          <TaskCard
+            step={documentUploadStep}
+            surface="flowchart"
+            onActivate={openDetail}
+          />
         </section>
       </div>
     </div>
