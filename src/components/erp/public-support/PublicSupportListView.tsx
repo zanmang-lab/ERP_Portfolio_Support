@@ -12,6 +12,7 @@ import {
   getDaysUntilDeadline,
   isDeadlineWithinThreeDays,
 } from "@/lib/supportDeadline";
+import { SystemConfirmDialog } from "@/components/erp/ui/SystemConfirmDialog";
 
 type LoadState = "idle" | "loading" | "ready" | "error";
 
@@ -125,6 +126,14 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
     key: null,
     dir: "asc",
   });
+  /** 사업 진행 열: 이중 확인 후에만 true */
+  const [businessProgress, setBusinessProgress] = useState<
+    Record<string, boolean>
+  >({});
+  /** 1차(info) → 2차(final) 확인 순서 */
+  const [progressConfirm, setProgressConfirm] = useState<
+    null | { notice: PublicSupportNotice; phase: "info" | "final" }
+  >(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -193,6 +202,40 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
     return [...rows].sort((a, b) => compareNotice(a, b, sort.key!, sort.dir));
   }, [rows, sort.key, sort.dir]);
 
+  const handleBusinessProgressChange = useCallback(
+    (row: PublicSupportNotice, nextChecked: boolean) => {
+      if (nextChecked) {
+        setProgressConfirm({ notice: row, phase: "info" });
+        return;
+      }
+      setBusinessProgress((prev) => {
+        const next = { ...prev };
+        delete next[row.id];
+        return next;
+      });
+    },
+    [],
+  );
+
+  const closeProgressConfirm = useCallback(() => {
+    setProgressConfirm(null);
+  }, []);
+
+  const handleProgressInfoConfirm = useCallback(() => {
+    setProgressConfirm((c) =>
+      c && c.phase === "info" ? { notice: c.notice, phase: "final" } : c,
+    );
+  }, []);
+
+  const handleProgressFinalConfirm = useCallback(() => {
+    setProgressConfirm((c) => {
+      if (c?.phase === "final") {
+        setBusinessProgress((prev) => ({ ...prev, [c.notice.id]: true }));
+      }
+      return null;
+    });
+  }, []);
+
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-gray-50">
       <header className="flex shrink-0 items-center gap-3 border-b border-zinc-200 bg-gray-50 px-4 py-3">
@@ -234,7 +277,7 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
           ) : (
             <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
               <div className="h-full min-h-0 min-w-0 overflow-x-auto overflow-y-auto">
-                <table className="w-max min-w-[1320px] table-fixed border-collapse text-sm">
+                <table className="w-max min-w-[1410px] table-fixed border-collapse text-sm">
                   <colgroup>
                     <col className="w-[88px]" />
                     <col className="w-[104px]" />
@@ -244,6 +287,7 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
                     <col className="w-[136px]" />
                     <col className="w-[156px]" />
                     <col className="w-[104px]" />
+                    <col className="w-[96px]" />
                   </colgroup>
                   <thead className="sticky top-0 z-10 bg-rose-100 text-red-900 shadow-sm">
                     <tr>
@@ -291,13 +335,16 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
                       <th className="whitespace-nowrap border border-rose-200/80 px-4 py-2.5 text-center text-xs font-semibold break-keep">
                         파일다운로드
                       </th>
+                      <th className="whitespace-nowrap border border-rose-200/80 px-4 py-2.5 text-center text-xs font-semibold break-keep">
+                        사업 진행
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white text-zinc-800">
                     {displayRows.length === 0 && loadState === "ready" ? (
                       <tr>
                         <td
-                          colSpan={8}
+                          colSpan={9}
                           className="border border-zinc-200 px-4 py-8 text-center text-sm text-zinc-500"
                         >
                           조건에 맞는 진행 중 공고가 없습니다.
@@ -364,6 +411,20 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
                               <span className="text-zinc-400">—</span>
                             )}
                           </td>
+                          <td className="whitespace-nowrap border border-zinc-200 px-4 py-2 text-center align-middle break-keep">
+                            <input
+                              type="checkbox"
+                              checked={!!businessProgress[row.id]}
+                              onChange={(e) =>
+                                handleBusinessProgressChange(
+                                  row,
+                                  e.target.checked,
+                                )
+                              }
+                              className="h-4 w-4 rounded border-zinc-400 text-blue-600"
+                              aria-label={`${row.title} 사업 진행`}
+                            />
+                          </td>
                         </tr>
                       );
                     })}
@@ -374,6 +435,21 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
           )}
         </div>
       </div>
+
+      <SystemConfirmDialog
+        open={progressConfirm?.phase === "info"}
+        title="확인"
+        message="해당 공고가 사업신청으로 넘어갑니다."
+        onConfirm={handleProgressInfoConfirm}
+        onCancel={closeProgressConfirm}
+      />
+      <SystemConfirmDialog
+        open={progressConfirm?.phase === "final"}
+        title="확인"
+        message="이대로 반영할까요?"
+        onConfirm={handleProgressFinalConfirm}
+        onCancel={closeProgressConfirm}
+      />
     </div>
   );
 }
