@@ -1,40 +1,52 @@
 import type { PublicSupportNotice } from "@/data/publicSupportMock";
 import { formatApplicationPeriod } from "@/data/publicSupportMock";
+import {
+  formatDdayLabel,
+  getDaysUntilDeadline,
+} from "@/lib/supportDeadline";
 
-export type SummarySectionKey =
-  | "overview"
-  | "eligibility"
-  | "announcement"
-  | "documents"
-  | "submission"
-  | "targets"
-  | "selection";
-
-/** UI에서 keyword → 포인트 컬러·볼드 매핑 */
+/** UI: keyword=blue-600, danger=red-600 (D-Day 등) */
 export type SummaryPart = {
   text: string;
-  emphasis?: "keyword";
+  emphasis?: "keyword" | "danger";
 };
 
-export type SummaryLine = SummaryPart[];
-
-export type SummaryBullet = {
+export type LabeledPartsRow = {
   label: string;
   parts: SummaryPart[];
 };
 
-export type DemoSummarySection = {
-  key: SummarySectionKey;
-  title: string;
-  bullets: SummaryBullet[];
+export type BracketRow = {
+  bracket: string;
+  parts: SummaryPart[];
 };
 
-export type AiThreeLineSummary = {
-  lines: readonly [SummaryLine, SummaryLine, SummaryLine];
+/**
+ * 실제 공고문/LLM 없음 — 목록 메타만으로 구성된 3그룹 데모 요약
+ */
+export type AiSummaryGrouped = {
+  briefing: {
+    rows: LabeledPartsRow[];
+    aiCommentParts: SummaryPart[];
+  };
+  schedule: {
+    /** 점 형식 신청기간 문자열 */
+    periodDots: string;
+    /** formatDdayLabel 결과, 예: D-11 */
+    ddayLabel: string;
+    bullets: SummaryPart[][];
+  };
+  criteria: {
+    bracketRows: BracketRow[];
+  };
 };
 
 function kw(text: string): SummaryPart {
   return { text, emphasis: "keyword" };
+}
+
+function dg(text: string): SummaryPart {
+  return { text, emphasis: "danger" };
 }
 
 function tx(text: string): SummaryPart {
@@ -67,242 +79,170 @@ function titleHeadline(title: string): string {
   return i === -1 ? title : title.slice(0, i);
 }
 
-/** 패널 헤더 칩용 — 실제 메타만 (가짜 지역·유형 라벨 없음) */
+function pad2(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
+/** 예: 2026.04.10 ~ 04.30 (동일 연도면 끝만 월.일) */
+export function formatPeriodDots(notice: PublicSupportNotice): string {
+  const ps = notice.periodStart.slice(0, 10).split("-").map(Number);
+  const pe = notice.periodEnd.slice(0, 10).split("-").map(Number);
+  const [sy, sm, sd] = ps;
+  const [ey, em, ed] = pe;
+  const start = `${sy}.${pad2(sm ?? 1)}.${pad2(sd ?? 1)}`;
+  const end =
+    ey === sy ? `${pad2(em ?? 1)}.${pad2(ed ?? 1)}` : `${ey}.${pad2(em ?? 1)}.${pad2(ed ?? 1)}`;
+  return `${start} ~ ${end}`;
+}
+
+/** 마감까지 일수 기반 데모 코멘트(LLM 없음) */
+function buildAiCommentParts(notice: PublicSupportNotice): SummaryPart[] {
+  const days = getDaysUntilDeadline(notice.deadline);
+  if (days < 0) {
+    return [
+      tx("마감일 경과 가능성 있음 · 최종 확인은 "),
+      kw("첨부 공고문"),
+      tx(" 및 기관 안내."),
+    ];
+  }
+  if (days === 0) {
+    return [
+      dg("오늘 마감"),
+      tx(" · 제출 마감 시각까지 "),
+      kw("서류 완결"),
+      tx(" 확인."),
+    ];
+  }
+  if (days <= 3) {
+    return [
+      dg(`마감 임박 (${days}일 남음)`),
+      tx(" · 누락 서류 없는지 "),
+      kw("공고문 목록"),
+      tx(" 재점검."),
+    ];
+  }
+  if (days <= 14) {
+    return [
+      tx(`마감까지 약 ${days}일 · `),
+      kw("신청서·증빙"),
+      tx(" 준비를 서두르세요."),
+    ];
+  }
+  return [
+    tx("마감까지 여유 있음 · 세부 요건은 "),
+    kw("첨부 공고문"),
+    tx(" 및 "),
+    kw(notice.agency),
+    tx(" 공지 확인."),
+  ];
+}
+
+/** 패널 헤더 칩용 — 실제 메타만 */
 export function getSummaryHeaderBadges(notice: PublicSupportNotice): string[] {
   return [notice.field, notice.ministry, "공공지원"];
 }
 
-/**
- * 메타데이터만 반영한 3줄 스냅샷 (데모)
- */
-export function getAiThreeLineSummary(
-  notice: PublicSupportNotice,
-): AiThreeLineSummary {
+export function getGroupedAiSummary(notice: PublicSupportNotice): AiSummaryGrouped {
   const headline = titleHeadline(notice.title);
   const idLine = formatPublicNoticeId(notice.id);
-  const period = formatApplicationPeriod(notice);
+  const periodDots = formatPeriodDots(notice);
+  const periodIso = formatApplicationPeriod(notice);
+  const daysUntil = getDaysUntilDeadline(notice.deadline);
+  const ddayLabel = formatDdayLabel(daysUntil);
 
   return {
-    lines: [
-      [
-        kw(`「${headline}」`),
-        tx(` · `),
-        kw(notice.field),
-        tx(` 분야 공모. `),
-        tx(`공고 ID `),
-        kw(idLine),
-        tx(`\.`),
-      ],
-      [
-        tx(`주관 `),
-        kw(notice.ministry),
-        tx(` · 수행 `),
-        kw(notice.agency),
-        tx(`\. `),
-        tx(`신청기간 `),
-        kw(period),
-        tx(`\.`),
-      ],
-      [
-        tx(`신청 마감 `),
-        kw(notice.deadline),
-        tx(`\. `),
-        tx(`세부 조건·서류는 `),
-        kw("첨부 공고문"),
-        tx(` 기준으로 확인하세요.`),
-      ],
-    ],
-  };
-}
-
-/**
- * 실제 공고문 파싱 없이, 메타데이터만 반영한 7블록 데모 요약 (불릿)
- */
-export function getDemoSummarySections(
-  notice: PublicSupportNotice,
-): DemoSummarySection[] {
-  const period = formatApplicationPeriod(notice);
-  const headline = titleHeadline(notice.title);
-  const idLine = formatPublicNoticeId(notice.id);
-
-  return [
-    {
-      key: "overview",
-      title: "사업개요",
-      bullets: [
+    briefing: {
+      rows: [
         {
-          label: "사업·분야",
-          parts: [
-            kw(notice.field),
-            tx(` · `),
-            kw(`「${headline}」`),
-            tx(` · `),
-            tx(`ID `),
-            kw(idLine),
-          ],
+          label: "사업명",
+          parts: [kw(`「${headline}」`)],
         },
         {
-          label: "주관 / 수행",
+          label: "분야 · 공고 ID",
+          parts: [kw(notice.field), tx(` · `), kw(idLine)],
+        },
+        {
+          label: "주관 · 수행",
           parts: [kw(notice.ministry), tx(` · `), kw(notice.agency)],
         },
         {
-          label: "신청기간",
-          parts: [kw(period), tx(` · 프로그램 구성은 `), kw("첨부 공고문")],
-        },
-      ],
-    },
-    {
-      key: "eligibility",
-      title: "지원자격 및 요건",
-      bullets: [
-        {
-          label: "대상",
+          label: "신청기간(개요)",
           parts: [
-            tx(`법인·개인사업자 등 `),
-            kw("공고문 요건표"),
-            tx(` 부합`),
-          ],
-        },
-        {
-          label: "결격 사유",
-          parts: [
-            kw("세금 체납"),
-            tx(` 등 공고문 결격 조항 확인 (실제 적용은 공고문 기준)`),
-          ],
-        },
-        {
-          label: "세부 기준",
-          parts: [
-            tx(`규모·실적· `),
-            kw(notice.field),
-            tx(` 관련 증빙은 `),
-            kw(`「${headline}」`),
-            tx(` 별표·별지`),
-          ],
-        },
-      ],
-    },
-    {
-      key: "announcement",
-      title: "사업공고 및 신청",
-      bullets: [
-        {
-          label: "공고 채널",
-          parts: [
-            kw(notice.ministry),
-            tx(` · `),
-            kw(notice.agency),
-            tx(` 공식 안내`),
-          ],
-        },
-        {
-          label: "접수 기간",
-          parts: [kw(period)],
-        },
-        {
-          label: "마감일",
-          parts: [
-            kw(notice.deadline),
-            tx(` · 접수처·동의 사항은 공고문 `),
-            kw("신청 방법"),
-            tx(` 란`),
-          ],
-        },
-      ],
-    },
-    {
-      key: "documents",
-      title: "신청서류",
-      bullets: [
-        {
-          label: "기본",
-          parts: [
-            kw("사업신청서"),
-            tx(` · `),
-            kw("사업자등록증"),
-            tx(` · `),
-            kw("재무·신분"),
-            tx(` 등 공고문 목록`),
-          ],
-        },
-        {
-          label: "추가·형식",
-          parts: [
-            kw(`「${headline}」`),
-            tx(` 기준 추가 서류· `),
-            kw("PDF/HWP"),
-            tx(` 명시 양식 준수`),
-          ],
-        },
-      ],
-    },
-    {
-      key: "submission",
-      title: "제출양식 및 제출본",
-      bullets: [
-        {
-          label: "양식",
-          parts: [
-            kw("지정 서식"),
-            tx(` 작성 · `),
-            kw("서명·날인"),
-            tx(` · 파일 용량 제한 준수`),
-          ],
-        },
-        {
-          label: "제출 경로",
-          parts: [
-            kw("온라인"),
-            tx(` 스캔 화질·파일명 규칙 · `),
-            kw("우편·방문"),
-            tx(` 분기는 공고문 제출 안내`),
-          ],
-        },
-      ],
-    },
-    {
-      key: "targets",
-      title: "사업대상",
-      bullets: [
-        {
-          label: "분야·목적",
-          parts: [
-            kw(notice.field),
-            tx(` 분야에서 사업 목적에 부합하는 `),
-            kw("기업·기관"),
-          ],
-        },
-        {
-          label: "제한",
-          parts: [
-            kw("지역·업종·중복 지원"),
-            tx(` 한도는 공고문 본문·별표`),
-          ],
-        },
-      ],
-    },
-    {
-      key: "selection",
-      title: "업체 선정 기준",
-      bullets: [
-        {
-          label: "평가",
-          parts: [
-            kw("서류·발표 심사"),
-            tx(` 등 공고문 `),
-            kw("배점·절차"),
-            tx(` · 타당성·재무·수행 역량`),
-          ],
-        },
-        {
-          label: "문의·확정",
-          parts: [
-            kw(notice.agency),
-            tx(` 공지 최종 반영 · 세부는 `),
+            kw(periodIso),
+            tx(` · 프로그램·세부는 `),
             kw("첨부 공고문"),
           ],
         },
       ],
+      aiCommentParts: buildAiCommentParts(notice),
     },
-  ];
+    schedule: {
+      periodDots,
+      ddayLabel,
+      bullets: [
+        [
+          tx("• 공고 · 접수 "),
+          kw(notice.ministry),
+          tx(" / "),
+          kw(notice.agency),
+          tx(" 채널 확인"),
+        ],
+        [
+          tx("• 마감 "),
+          kw(notice.deadline),
+          tx(" · 접수처·동의는 공고문 "),
+          kw("신청 방법"),
+        ],
+        [
+          tx("• 서류 "),
+          kw("신청서·사업자·재무·신분"),
+          tx(" 등 공고문 목록 · 추가는 "),
+          kw(`「${headline}」`),
+          tx(" 별표"),
+        ],
+        [
+          tx("• 제출 "),
+          kw("지정 양식"),
+          tx(" · 서명·날인 · "),
+          kw("온라인"),
+          tx("/우편 분기는 공고문"),
+        ],
+      ],
+    },
+    criteria: {
+      bracketRows: [
+        {
+          bracket: "대상",
+          parts: [
+            kw(notice.field),
+            tx(` 분야 `),
+            kw("기업·기관"),
+            tx(" · 공고문 요건표 부합"),
+          ],
+        },
+        {
+          bracket: "결격",
+          parts: [
+            kw("세금 체납"),
+            tx(" 등 공고문 결격 조항 · 실제 적용은 공고문 기준"),
+          ],
+        },
+        {
+          bracket: "제한",
+          parts: [
+            kw("지역·업종·중복 지원"),
+            tx(" 한도 · 본문·별표"),
+          ],
+        },
+        {
+          bracket: "기준",
+          parts: [
+            kw("서류·발표 심사"),
+            tx(" · 배점·절차는 공고문 · 최종 "),
+            kw(notice.agency),
+          ],
+        },
+      ],
+    },
+  };
 }

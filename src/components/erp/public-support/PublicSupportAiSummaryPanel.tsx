@@ -1,54 +1,15 @@
 "use client";
 
-import {
-  ClipboardList,
-  ListOrdered,
-  Target,
-  CircleDot,
-  Megaphone,
-  Send,
-  FileText,
-  FolderOpen,
-  ClipboardCheck,
-  Upload,
-  Users,
-  Factory,
-  Scale,
-  BadgeCheck,
-  Sparkles,
-  X,
-  type LucideIcon,
-} from "lucide-react";
+import { Calendar, Sparkles, Target, X } from "lucide-react";
 import { useEffect, useId, useRef } from "react";
 import type { PublicSupportNotice } from "@/data/publicSupportMock";
 import {
   formatPublicNoticeId,
-  getAiThreeLineSummary,
-  getDemoSummarySections,
+  getGroupedAiSummary,
   getSummaryHeaderBadges,
-  type DemoSummarySection,
+  type LabeledPartsRow,
   type SummaryPart,
-  type SummarySectionKey,
 } from "@/lib/publicSupportDemoSummary";
-
-const SECTION_ICONS: Record<
-  SummarySectionKey,
-  readonly [LucideIcon, LucideIcon]
-> = {
-  overview: [ClipboardList, ListOrdered],
-  eligibility: [Target, CircleDot],
-  announcement: [Megaphone, Send],
-  documents: [FileText, FolderOpen],
-  submission: [ClipboardCheck, Upload],
-  targets: [Users, Factory],
-  selection: [Scale, BadgeCheck],
-};
-
-const BADGE_STYLES = [
-  "bg-indigo-100 text-indigo-900 ring-1 ring-indigo-200/80",
-  "bg-slate-100 text-slate-800 ring-1 ring-slate-200/80",
-  "bg-violet-100 text-violet-900 ring-1 ring-violet-200/80",
-] as const;
 
 function SummaryParts({ parts }: { parts: SummaryPart[] }) {
   return (
@@ -58,8 +19,10 @@ function SummaryParts({ parts }: { parts: SummaryPart[] }) {
           key={i}
           className={
             p.emphasis === "keyword"
-              ? "font-bold text-blue-600"
-              : "text-zinc-800"
+              ? "font-semibold text-blue-600"
+              : p.emphasis === "danger"
+                ? "font-semibold text-red-600"
+                : "font-semibold text-gray-900"
           }
         >
           {p.text}
@@ -69,15 +32,16 @@ function SummaryParts({ parts }: { parts: SummaryPart[] }) {
   );
 }
 
-function SectionIcons({ section }: { section: DemoSummarySection }) {
-  const pair = SECTION_ICONS[section.key];
-  if (!pair) return null;
-  const [A, B] = pair;
+function BriefingRow({ row }: { row: LabeledPartsRow }) {
   return (
-    <span className="inline-flex shrink-0 items-center gap-1" aria-hidden>
-      <A className="h-4 w-4 text-amber-600" />
-      <B className="h-4 w-4 text-sky-600" />
-    </span>
+    <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:gap-4">
+      <span className="shrink-0 text-xs font-medium text-gray-500 sm:min-w-[6.5rem]">
+        {row.label}
+      </span>
+      <div className="min-w-0 text-sm leading-relaxed text-gray-900">
+        <SummaryParts parts={row.parts} />
+      </div>
+    </div>
   );
 }
 
@@ -114,8 +78,7 @@ export function PublicSupportAiSummaryPanel({
 
   if (!open || !notice) return null;
 
-  const sections = getDemoSummarySections(notice);
-  const threeLine = getAiThreeLineSummary(notice);
+  const grouped = getGroupedAiSummary(notice);
   const headerBadges = getSummaryHeaderBadges(notice);
   const displayId = formatPublicNoticeId(notice.id);
   const headline =
@@ -126,7 +89,7 @@ export function PublicSupportAiSummaryPanel({
   return (
     <div className="fixed inset-0 z-[95]" role="presentation">
       <div
-        className="absolute inset-0 bg-zinc-900/40 backdrop-blur-[2px]"
+        className="absolute inset-0 bg-zinc-900/35 backdrop-blur-[1px]"
         role="presentation"
         onClick={onClose}
       />
@@ -134,19 +97,19 @@ export function PublicSupportAiSummaryPanel({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="absolute right-0 top-0 flex h-full w-[min(42vw,30rem)] max-w-full flex-col border-l border-zinc-200 bg-white shadow-xl"
+        className="absolute right-0 top-0 flex h-full w-[min(42vw,30rem)] max-w-full flex-col border-l border-gray-200 bg-slate-50 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex shrink-0 flex-col gap-2.5 border-b border-zinc-100 px-4 pb-4 pt-4">
+        <div className="flex shrink-0 flex-col gap-3 border-b border-gray-200 bg-slate-50 px-4 pb-4 pt-4">
           <div className="flex items-start justify-between gap-2">
-            <p className="text-xs font-medium tracking-wide text-zinc-500">
+            <p className="text-xs font-medium tracking-wide text-gray-500">
               AI 요약
             </p>
             <button
               ref={closeRef}
               type="button"
               onClick={onClose}
-              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-600 shadow-sm hover:bg-zinc-50"
+              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 shadow-sm hover:bg-gray-50"
               aria-label="닫기"
             >
               <X className="h-4 w-4" />
@@ -154,7 +117,7 @@ export function PublicSupportAiSummaryPanel({
           </div>
           <h2
             id={titleId}
-            className="text-base font-bold leading-snug tracking-tight text-zinc-900"
+            className="text-base font-bold leading-snug tracking-tight text-slate-900"
           >
             {headline}
           </h2>
@@ -162,86 +125,116 @@ export function PublicSupportAiSummaryPanel({
             {headerBadges.map((label, i) => (
               <span
                 key={`${label}-${i}`}
-                className={`inline-flex max-w-full truncate rounded-full px-2.5 py-0.5 text-xs font-medium ${BADGE_STYLES[i % BADGE_STYLES.length]}`}
+                className="inline-flex max-w-full truncate rounded-full border border-gray-200 bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700"
               >
                 {label}
               </span>
             ))}
           </div>
-          <p className="text-xs leading-relaxed text-zinc-500">
+          <p className="text-xs leading-relaxed text-gray-500">
             공고 ID :{" "}
-            <span className="font-semibold text-zinc-700">{displayId}</span>
+            <span className="font-semibold text-gray-800">{displayId}</span>
           </p>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6">
-          <div className="flex flex-col gap-6">
-            {/* AI 3줄 요약 하이라이트 */}
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-8">
+          <div className="flex flex-col gap-y-10">
+            {/* 그룹 A */}
             <section
-              className="rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50 via-white to-violet-50 px-4 py-4 shadow-sm"
-              aria-label="AI 3줄 요약"
+              className="rounded-lg border border-gray-200 bg-stone-50 px-4 py-5 shadow-sm"
+              aria-label="AI 핵심 브리핑"
             >
-              <div className="mb-4 flex items-center gap-2">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700">
-                  <Sparkles className="h-4 w-4" aria-hidden />
-                </span>
-                <h3 className="text-sm font-bold tracking-tight text-indigo-950">
-                  AI 3줄 요약
+              <div className="mb-5 flex items-center gap-2">
+                <Sparkles
+                  className="h-4 w-4 shrink-0 text-slate-500"
+                  aria-hidden
+                />
+                <h3 className="text-sm font-semibold tracking-tight text-slate-900">
+                  AI 핵심 브리핑
                 </h3>
               </div>
-              <ol className="list-none space-y-4">
-                {threeLine.lines.map((line, i) => (
-                  <li
-                    key={i}
-                    className="flex gap-3 leading-loose text-sm text-zinc-800"
-                  >
-                    <span
-                      className="mt-0.5 flex h-7 min-w-[1.75rem] shrink-0 items-center justify-center rounded-full bg-white text-xs font-bold text-indigo-700 shadow-sm ring-1 ring-indigo-100"
-                      aria-hidden
-                    >
-                      {i + 1}
-                    </span>
-                    <span className="min-w-0 pt-0.5">
-                      <SummaryParts parts={line} />
-                    </span>
-                  </li>
+              <div className="space-y-4 leading-loose">
+                {grouped.briefing.rows.map((row, i) => (
+                  <BriefingRow key={i} row={row} />
                 ))}
-              </ol>
+              </div>
+              <div className="mt-6 border-t border-gray-200/80 pt-4">
+                <p className="mb-2 text-xs font-medium text-gray-500">
+                  AI 분석 코멘트
+                </p>
+                <p className="text-sm leading-loose text-slate-800">
+                  <SummaryParts parts={grouped.briefing.aiCommentParts} />
+                </p>
+              </div>
             </section>
 
-            {/* 7개 섹션 */}
-            {sections.map((section) => (
-              <section
-                key={section.key}
-                className="rounded-xl bg-zinc-50 px-4 py-4 text-sm ring-1 ring-zinc-100"
-              >
-                <div className="mb-4 flex items-center gap-2 border-b border-zinc-100/80 pb-3">
-                  <SectionIcons section={section} />
-                  <h3 className="text-sm font-semibold tracking-tight text-zinc-900">
-                    {section.title}
-                  </h3>
-                </div>
-                <ul className="space-y-3.5 leading-loose text-zinc-800">
-                  {section.bullets.map((bullet, j) => (
-                    <li key={j} className="flex gap-2.5">
-                      <span
-                        className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500/90"
-                        aria-hidden
-                      />
-                      <div className="min-w-0 flex-1">
-                        <span className="font-semibold text-zinc-600">
-                          {bullet.label}
-                        </span>
-                        <span className="text-zinc-400"> : </span>
-                        <span className="inline leading-loose">
-                          <SummaryParts parts={bullet.parts} />
-                        </span>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ))}
+            {/* 그룹 B */}
+            <section
+              className="rounded-lg border border-gray-200 bg-white px-4 py-5 shadow-sm"
+              aria-label="주요 일정 및 신청"
+            >
+              <div className="mb-5 flex items-center gap-2">
+                <Calendar
+                  className="h-4 w-4 shrink-0 text-slate-500"
+                  aria-hidden
+                />
+                <h3 className="text-sm font-semibold tracking-tight text-slate-900">
+                  주요 일정 및 신청
+                </h3>
+              </div>
+
+              <div className="mb-6 flex flex-wrap items-center gap-x-2 gap-y-2 border-b border-gray-100 pb-5">
+                <span className="text-sm text-gray-500">신청기간</span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {grouped.schedule.periodDots}
+                </span>
+                <span
+                  className="inline-flex items-center rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-semibold text-red-600 ring-1 ring-red-100"
+                  aria-label={`D-Day ${grouped.schedule.ddayLabel}`}
+                >
+                  {grouped.schedule.ddayLabel}
+                </span>
+              </div>
+
+              <ul className="space-y-3 text-sm leading-loose text-slate-800">
+                {grouped.schedule.bullets.map((parts, i) => (
+                  <li key={i} className="pl-0.5">
+                    <SummaryParts parts={parts} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            {/* 그룹 C */}
+            <section
+              className="rounded-lg border border-gray-200 bg-white px-4 py-5 shadow-sm"
+              aria-label="지원 조건 및 심사"
+            >
+              <div className="mb-5 flex items-center gap-2">
+                <Target
+                  className="h-4 w-4 shrink-0 text-slate-500"
+                  aria-hidden
+                />
+                <h3 className="text-sm font-semibold tracking-tight text-slate-900">
+                  지원 조건 및 심사
+                </h3>
+              </div>
+              <div className="space-y-4">
+                {grouped.criteria.bracketRows.map((row, i) => (
+                  <div
+                    key={i}
+                    className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:gap-3"
+                  >
+                    <span className="inline-flex min-w-[3.25rem] shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-center text-xs font-medium text-gray-500">
+                      [{row.bracket}]
+                    </span>
+                    <div className="min-w-0 flex-1 text-sm leading-loose">
+                      <SummaryParts parts={row.parts} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
           </div>
         </div>
       </aside>
