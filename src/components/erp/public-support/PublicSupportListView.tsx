@@ -1,6 +1,12 @@
 "use client";
 
-import { ArrowDown, ArrowUp, Download, ChevronLeft } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  Download,
+  ChevronLeft,
+  Sparkles,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   publicSupportMockList,
@@ -12,6 +18,7 @@ import {
   getDaysUntilDeadline,
   isDeadlineWithinThreeDays,
 } from "@/lib/supportDeadline";
+import { PublicSupportAiSummaryPanel } from "@/components/erp/public-support/PublicSupportAiSummaryPanel";
 import { SystemConfirmDialog } from "@/components/erp/ui/SystemConfirmDialog";
 import { useSupportWorkspace } from "@/context/SupportWorkspaceContext";
 
@@ -133,6 +140,8 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
   const [progressConfirm, setProgressConfirm] = useState<
     null | { notice: PublicSupportNotice; phase: "info" | "final" }
   >(null);
+  const [summaryNotice, setSummaryNotice] =
+    useState<PublicSupportNotice | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -272,7 +281,7 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
           ) : (
             <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
               <div className="h-full min-h-0 min-w-0 overflow-x-auto overflow-y-auto">
-                <table className="w-max min-w-[1410px] table-fixed border-collapse text-sm">
+                <table className="w-max min-w-[1520px] table-fixed border-collapse text-sm">
                   <colgroup>
                     <col className="w-[88px]" />
                     <col className="w-[104px]" />
@@ -281,6 +290,7 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
                     <col className="w-[100px]" />
                     <col className="w-[136px]" />
                     <col className="w-[156px]" />
+                    <col className="w-[104px]" />
                     <col className="w-[104px]" />
                     <col className="w-[96px]" />
                   </colgroup>
@@ -328,6 +338,9 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
                         사업수행기관
                       </th>
                       <th className="whitespace-nowrap border border-rose-200/80 px-4 py-2.5 text-center text-xs font-semibold break-keep">
+                        AI 요약
+                      </th>
+                      <th className="whitespace-nowrap border border-rose-200/80 px-4 py-2.5 text-center text-xs font-semibold break-keep">
                         파일다운로드
                       </th>
                       <th className="whitespace-nowrap border border-rose-200/80 px-4 py-2.5 text-center text-xs font-semibold break-keep">
@@ -339,7 +352,7 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
                     {displayRows.length === 0 && loadState === "ready" ? (
                       <tr>
                         <td
-                          colSpan={9}
+                          colSpan={10}
                           className="border border-zinc-200 px-4 py-8 text-center text-sm text-zinc-500"
                         >
                           조건에 맞는 진행 중 공고가 없습니다.
@@ -382,6 +395,20 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
                           </td>
                           <td className="whitespace-nowrap border border-zinc-200 px-4 py-2 text-center align-middle break-keep">
                             {row.agency}
+                          </td>
+                          <td className="whitespace-nowrap border border-zinc-200 px-4 py-2 text-center align-middle break-keep">
+                            {row.hasFile ? (
+                              <button
+                                type="button"
+                                onClick={() => setSummaryNotice(row)}
+                                className="inline-flex rounded p-1.5 text-violet-700 hover:bg-violet-50"
+                                aria-label="AI 요약 보기"
+                              >
+                                <Sparkles className="h-5 w-5" />
+                              </button>
+                            ) : (
+                              <span className="text-zinc-400">—</span>
+                            )}
                           </td>
                           <td className="whitespace-nowrap border border-zinc-200 px-4 py-2 text-center align-middle break-keep">
                             {row.hasFile && row.fileUrl ? (
@@ -430,6 +457,12 @@ export function PublicSupportListView({ onBack }: { onBack: () => void }) {
           )}
         </div>
       </div>
+
+      <PublicSupportAiSummaryPanel
+        notice={summaryNotice}
+        open={summaryNotice !== null}
+        onClose={() => setSummaryNotice(null)}
+      />
 
       <SystemConfirmDialog
         open={progressConfirm?.phase === "info"}
